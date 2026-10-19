@@ -1,0 +1,24 @@
+{
+  "puzzle": "kakurasu",
+  "name": "6x6_easy",
+  "source": "https://www.puzzle-kakurasu.com/",
+  "puzzle_id": "3803542",
+  "rows": 6,
+  "cols": 6,
+  "row_clues": [
+    3,
+    1,
+    4,
+    1,
+    11,
+    3
+  ],
+  "col_clues": [
+    7,
+    1,
+    6,
+    3,
+    5,
+    5
+  ]
+}

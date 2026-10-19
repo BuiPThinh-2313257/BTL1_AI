@@ -1,0 +1,22 @@
+{
+  "puzzle": "kakurasu",
+  "name": "5x5_easy",
+  "source": "https://www.puzzle-kakurasu.com/",
+  "puzzle_id": "4426287",
+  "rows": 5,
+  "cols": 5,
+  "row_clues": [
+    13,
+    12,
+    13,
+    12,
+    3
+  ],
+  "col_clues": [
+    13,
+    9,
+    6,
+    10,
+    10
+  ]
+}

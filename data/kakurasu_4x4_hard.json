@@ -1,0 +1,20 @@
+{
+  "puzzle": "kakurasu",
+  "name": "4x4_hard",
+  "source": "https://www.puzzle-kakurasu.com/",
+  "puzzle_id": "4933483",
+  "rows": 4,
+  "cols": 4,
+  "row_clues": [
+    4,
+    2,
+    5,
+    4
+  ],
+  "col_clues": [
+    8,
+    2,
+    5,
+    3
+  ]
+}
