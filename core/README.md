@@ -16,23 +16,25 @@ traces/           trace mẫu cho TV4 làm GUI
 
 Tạo lớp con của `Problem` trong `puzzles/pipes.py` hoặc `puzzles/kakurasu.py`. Xem `puzzles/examples.py` để làm theo.
 
-| Hàm | Bắt buộc? | Dùng cho |
-|---|---|---|
-| `initial_state()` | có | DFS, BFS, A* |
-| `successors(state)` trả về `(action, next_state, cost)` | có | DFS, BFS, A* |
-| `is_goal(state)` | có | DFS, BFS, A* |
-| `heuristic(state)` | nếu dùng A*/Greedy | A*, Greedy |
-| `to_view(state)` | nên có | GUI và trace |
+| Hàm                                                                       | Bắt buộc?                | Dùng cho          |
+| ------------------------------------------------------------------------- | ------------------------ | ----------------- |
+| `initial_state()`                                                         | có                       | DFS, BFS, A\*     |
+| `successors(state)` trả về `(action, next_state, cost)`                   | có                       | DFS, BFS, A\*     |
+| `is_goal(state)`                                                          | có                       | DFS, BFS, A\*     |
+| `heuristic(state)`                                                        | nếu dùng A\*/Greedy      | A\*, Greedy       |
+| `to_view(state)`                                                          | nên có                   | GUI và trace      |
 | `local_initial_state(rng)`, `local_neighbors(state)`, `local_cost(state)` | nếu dùng tìm kiếm cục bộ | Hill Climbing, SA |
 
 Lưu ý:
+
 - **State phải là tuple** (hoặc kiểu bất biến, hashable). Không dùng list hay dict, vì giải thuật lưu state vào set/dict.
 - **Cắt tỉa trong `successors`**: chỉ trả về các bước chưa vi phạm luật. DFS chạy nhanh hay chậm phụ thuộc gần như hoàn toàn vào phần này.
-- Tìm kiếm cục bộ dùng *lời giải đầy đủ* (vd Pipes: mọi ô đều đã có góc xoay), còn DFS/A* dùng *lời giải đang dựng dở*. Hai kiểu state này có thể khác nhau.
+- Tìm kiếm cục bộ dùng _lời giải đầy đủ_ (vd Pipes: mọi ô đều đã có góc xoay), còn DFS/A* dùng *lời giải đang dựng dở\*. Hai kiểu state này có thể khác nhau.
 
 Gợi ý cho từng bài:
+
 - **Pipes**: DFS gán góc xoay lần lượt từng ô, `successors` bỏ góc xoay làm ống chĩa ra biên hoặc lệch với ô đã gán. Heuristic dùng `hill_climbing` với `local_cost` = số mối nối lệch + (số mạng rời − 1).
-- **Kakurasu**: DFS điền từng hàng bằng các tập ô có tổng đúng gợi ý hàng, cắt khi cột vượt gợi ý. A* dùng chung `successors`, `heuristic` là phần còn thiếu của các cột chia cho chỉ số hàng lớn nhất còn lại.
+- **Kakurasu**: DFS điền từng hàng bằng các tập ô có tổng đúng gợi ý hàng, cắt khi cột vượt gợi ý. A\* dùng chung `successors`, `heuristic` là phần còn thiếu của các cột chia cho chỉ số hàng lớn nhất còn lại.
 
 ## Chạy giải thuật
 
@@ -40,7 +42,7 @@ Gợi ý cho từng bài:
 from core import astar, dfs, hill_climbing, Limits, Trace
 from puzzles.pipes import Pipes
 
-p = Pipes.from_file("data/pipes_5x5_01.json")
+p = Pipes.from_file("data/pipes_4x4_01.json")
 res = dfs(p, limits=Limits(time_limit=60, max_nodes=2_000_000))
 print(res.status, res.nodes_expanded, res.elapsed)
 # status: solved | no_solution | node_limit | time_limit | stuck
