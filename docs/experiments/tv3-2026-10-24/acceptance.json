@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-24",
+  "scope": "TV3 Kakurasu only",
+  "base_head": "3de2bfddc74ac2479143a468b5d380cb38c52b41",
+  "branch": "tv3-kakurasu",
+  "tests": {
+    "total": 33,
+    "passed": 33,
+    "log": "tests.log"
+  },
+  "experiment": {
+    "cases": 72,
+    "raw_runs": 288,
+    "solved_cases": 55,
+    "node_limited_cases": 17,
+    "time_limited_cases": 0,
+    "all_time_repeats_match": true,
+    "all_memory_search_signatures_match": true
+  },
+  "trace_configuration": {
+    "input": "data/kakurasu_4x4_easy.json",
+    "prune": "basic",
+    "dfs_events": 485,
+    "astar_events": 18
+  },
+  "hardware": {
+    "cpu": "13th Gen Intel Core i7-13650HX",
+    "cores": 14,
+    "logical_cpus": 20,
+    "physical_ram_bytes": 16873545728
+  },
+  "files_sha256": {
+    "README.md": "f1ce40e2853382f6441771c685a3c722cd19f0d1f4ce54821b9a6f71cc2adb52",
+    "puzzles/kakurasu.py": "9629ec6745de534e39292b10de448482f6594349bc6499e1d44920af2dabc350",
+    "tests/test_kakurasu.py": "d279fdb1f2ae221ae67bd5b3311dfa0a489a48b88970e41220316a2326ca5144",
+    "tools/tv3_kakurasu_experiment.py": "14297c5d3cf01eccb255b24e841f5afebb72b37cc30d69359f8b645a7e96148b",
+    "docs/giai_thich_kakurasu.md": "556b8a6773582d8c17fa80d8c0fcf1954a54c01c59dc7ccc7c5917f8012b8996",
+    "docs/bao_cao_tv3_kakurasu.md": "999b333e9a0e2ea710cdb8d05e7a4f60362548474b4af7c2aab71ffedc2f1bfc",
+    "docs/experiments/tv3-2026-10-24/raw.csv": "523c27782fb6eac644f423f4806b6b9fecfd311ed76c97008637463dc9ceab38",
+    "docs/experiments/tv3-2026-10-24/summary.csv": "decb671823243acd1cda77a977d58372b86077ee87adba33ec905c1551c740b1",
+    "docs/experiments/tv3-2026-10-24/metadata.json": "a381036c97875daaecd5c77f965bca5818ecaa9474a4dc89517747ce32e20520",
+    "docs/experiments/tv3-2026-10-24/tests.log": "fec1745d2350c3a148b5495b87d2eb2c534d933e580edc4fdda0af46e01516bd"
+  },
+  "working_changes_committed": false,
+  "pushed": false
+}

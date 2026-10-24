@@ -1,0 +1,57 @@
+{
+  "started_utc": "2026-10-24T05:02:14.036234+00:00",
+  "command": [
+    "C:\\Users\\uri de van\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "tools\\tv3_kakurasu_experiment.py",
+    "--output",
+    "docs\\experiments\\tv3-2026-10-24",
+    "--repeats",
+    "3",
+    "--max-nodes",
+    "50000",
+    "--time-limit",
+    "5",
+    "--memory-time-limit",
+    "30"
+  ],
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+  "logical_cpus": 20,
+  "git_head": "3de2bfddc74ac2479143a468b5d380cb38c52b41",
+  "git_branch": "tv3-kakurasu",
+  "git_status": "M docs/giai_thich_kakurasu.md\n M puzzles/kakurasu.py\n M tests/test_kakurasu.py\n?? tools/",
+  "source_sha256": {
+    "core/__init__.py": "a535fff0ff45c47a8ea5308b4f589910194deb738c9f42bcb8bd34ed30f83404",
+    "core/metrics.py": "7b7d7bd3429111a26644a41427b612b4e5c6b39f1478ebc8d0ee0c6244085a86",
+    "core/problem.py": "37958dd6e69721a524cfb8df801b434f9ea59896a5b206c91802894ebb1e0bfb",
+    "core/search.py": "52cfaf5b6f271563ca44031f5601f398ced7cf91ea42872776f6ae213b659e4b",
+    "core/trace.py": "79cb2bd1066b5dfb5ba62969af6e87e46462f152b7efb187f428e1d3274d8598",
+    "puzzles/kakurasu.py": "9629ec6745de534e39292b10de448482f6594349bc6499e1d44920af2dabc350",
+    "tools/tv3_kakurasu_experiment.py": "14297c5d3cf01eccb255b24e841f5afebb72b37cc30d69359f8b645a7e96148b"
+  },
+  "data_sha256": {
+    "data/kakurasu_4x4_easy.json": "16f393491731e719b303783c81890bb79d38b7cbfb217303fa8155c6aeba4c1b",
+    "data/kakurasu_4x4_hard.json": "1ed0564fc1b2ed1b5493eda2d52d3506ded8aeeacf7dc885a4dcc6054c4db026",
+    "data/kakurasu_5x5_easy.json": "4e57f844fa8b005b0edf20fe7d0a27dd91ebb53a3a5d4eedff419f3a315e7264",
+    "data/kakurasu_5x5_hard.json": "cf75b111c9979d27afebd49892dbda0c862fa00aafbbbef6128eb3046e8900fd",
+    "data/kakurasu_6x6_easy.json": "bee9d822a7d786cb65b70992f8c47943471cf2b488bc52adc0723192d865eacf",
+    "data/kakurasu_6x6_hard.json": "31f5eff515a30a3dead848818bcd6f1bf6b3a043bae7390fbde52494cbc33f4c",
+    "data/kakurasu_7x7_easy.json": "55c56b935498f8dd72374a5b067fd521ba3bd80dcf323eaa8315d7cbcbc2953a",
+    "data/kakurasu_7x7_hard.json": "1ec0a39b5b286c8bde90278f9247f76845d0ca109e54bdbb16a48c7098954c35",
+    "data/kakurasu_8x8_easy.json": "3b7c8b48ff14047657a7663041a3f57b61382f87629de004887a958bbd32e35d",
+    "data/kakurasu_8x8_hard.json": "8c8d14c49d6a0057a6e2c5264255ac04c787bbd31e6b0fba63ea98af5ce165ff",
+    "data/kakurasu_9x9_easy.json": "3d7d8baeaf83310f3665f10488591f412d2720e44f619be7a7b85dcb82e54d1c",
+    "data/kakurasu_9x9_hard.json": "286e1e63d2f65a357476375ba4956d975116c14c4dbf6e2e023c33fda4667492"
+  },
+  "parameters": {
+    "repeats": 3,
+    "max_nodes": 50000,
+    "time_limit_s": 5.0,
+    "memory_time_limit_s": 30.0
+  },
+  "method": "serial, no trace; fresh model each run; model construction included; no warmup; timing without tracemalloc; one separate memory run per case; KiB=1024 bytes; Python allocation peak, not process RSS; valid=None for unsolved",
+  "finished_utc": "2026-10-24T05:04:08.245498+00:00",
+  "completed_cases": 72,
+  "raw_runs": 288
+}

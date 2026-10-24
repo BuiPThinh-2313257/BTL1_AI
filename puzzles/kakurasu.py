@@ -193,6 +193,8 @@ def verify(grid, row_clues, col_clues):
     """Kiểm tra một lưới 0/1 hoàn chỉnh có đúng luật không."""
     if len(grid) != len(row_clues) or any(len(row) != len(col_clues) for row in grid):
         return False
+    if any(type(v) is not int or v not in (0, 1) for row in grid for v in row):
+        return False
     for r, row in enumerate(grid):
         if sum(c + 1 for c, v in enumerate(row) if v) != row_clues[r]:
             return False

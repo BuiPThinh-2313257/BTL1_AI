@@ -73,9 +73,11 @@ h     = max(h_row, h_col)          (inf nếu có hàng/cột không thể bù �
 
 Ở trạng thái đầu của đề 4×4: h_row = 1+1+1+2 = 5, h_col = 1+2+2+1 = 6, nên h = 6, bằng đúng số ô đen của lời giải. Vì vậy A* đi thẳng tới đích, chỉ mở rộng 16 node.
 
-Heuristic trả về `inf` ở trạng thái chết, nên A* không bao giờ lấy những trạng thái đó ra khỏi heap. Đây là lý do A* vẫn chạy tốt khi `successors` chỉ cắt tỉa ở mức `basic`.
+Heuristic trả về `inf` ở trạng thái chết, nên các trạng thái đó có độ ưu tiên sau mọi trạng thái có f hữu hạn. `core.search.astar` vẫn đưa chúng vào heap: khi không còn trạng thái hữu hạn (ví dụ đề vô nghiệm), chúng vẫn có thể được lấy ra và mở rộng. Đây là ưu tiên duyệt, không phải thao tác loại bỏ node. Với một lời giải hữu hạn còn trong frontier, A* ưu tiên đường đi đó trước các trạng thái có f = inf.
 
-## 6. Kết quả sơ bộ (`core.search`, time_limit = 10 s)
+## 6. Kết quả sơ bộ trước 24/10/2026 (`core.search`, time_limit = 10 s)
+
+Bảng này là ghi nhận sơ bộ của phiên bản ban đầu, không phải bộ đo có kiểm soát mới. Bảng đầy đủ 12 input, thời gian/bộ nhớ, giới hạn và phân tích ở [báo cáo TV3](bao_cao_tv3_kakurasu.md). Không gộp các số liệu có ngân sách khác nhau.
 
 | Đề | DFS `basic` | BFS `basic` | A* `basic` | DFS `full` |
 |---|---|---|---|---|
@@ -110,3 +112,20 @@ Trace mẫu cho GUI: `traces/example_kakurasu_4x4_dfs.json` (có quay lui, 485 b
 {"puzzle": "kakurasu", "name": "4x4_easy", "puzzle_id": "9272227",
  "rows": 4, "cols": 4, "row_clues": [2, 4, 4, 5], "col_clues": [3, 5, 7, 2]}
 ```
+
+## 9. Hợp đồng kiểm tra lời giải và bàn giao
+
+`verify(grid, row_clues, col_clues)` nhận lưới hoàn chỉnh đúng kích thước;
+mỗi ô phải có kiểu `int` và giá trị 0 hoặc 1. `bool`, `float`, chuỗi và `None`
+đều không hợp lệ. Sau đó hàm kiểm tra tổng có trọng số của từng hàng/cột.
+Ô chưa quyết định chỉ xuất hiện trong `to_view`, không phải lời giải để `verify` chấp nhận.
+
+Hai trace mẫu dùng cắt tỉa `basic`, mỗi quyết định một ô; `solution` chứa cả trạng thái
+đầu nên có n*m+1 trạng thái. DFS có 485 sự kiện/483 node mở rộng; A* có 18 sự kiện/16
+node mở rộng trên 4x4 easy. Kiểm thử so sánh JSON chuẩn hóa với trace sinh lại;
+không so thời gian thực thi vì thời gian thay đổi theo máy và lần chạy.
+
+Mô hình tối ưu hóa số ô đen (`g`), không phải số lần quyết định ô: mọi lời giải đầy đủ
+đều có n*m hành động. BFS ưu tiên độ sâu nên không được dùng như bằng chứng tối ưu
+số ô đen. DFS/BFS vẫn là tìm kiếm mù theo thứ tự duyệt, dù `full` dùng ràng buộc miền
+bài toán để cắt tỉa. A* có thêm thứ tự ưu tiên theo `g+h`.
