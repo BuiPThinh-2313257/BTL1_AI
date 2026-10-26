@@ -1,0 +1,26 @@
+{
+  "puzzle": "kakurasu",
+  "name": "7x7_easy",
+  "source": "https://www.puzzle-kakurasu.com/",
+  "puzzle_id": "3079774",
+  "rows": 7,
+  "cols": 7,
+  "row_clues": [
+    21,
+    16,
+    20,
+    27,
+    22,
+    26,
+    22
+  ],
+  "col_clues": [
+    17,
+    19,
+    27,
+    27,
+    19,
+    20,
+    26
+  ]
+}

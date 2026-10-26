@@ -1,0 +1,39 @@
+test_astar_expands_less_than_bfs (test_core.TestBlindAndInformed.test_astar_expands_less_than_bfs) ... ok
+test_astar_optimal_hard (test_core.TestBlindAndInformed.test_astar_optimal_hard) ... ok
+test_bfs_optimal (test_core.TestBlindAndInformed.test_bfs_optimal) ... ok
+test_dfs_and_greedy_find_valid_solution (test_core.TestBlindAndInformed.test_dfs_and_greedy_find_valid_solution) ... ok
+test_dfs_max_depth (test_core.TestBlindAndInformed.test_dfs_max_depth) ... ok
+test_dfs_nqueens (test_core.TestBlindAndInformed.test_dfs_nqueens) ... ok
+test_no_solution (test_core.TestBlindAndInformed.test_no_solution) ... ok
+test_node_limit (test_core.TestBlindAndInformed.test_node_limit) ... ok
+test_hill_climbing (test_core.TestLocal.test_hill_climbing) ... ok
+test_seed_reproducible (test_core.TestLocal.test_seed_reproducible) ... ok
+test_simulated_annealing (test_core.TestLocal.test_simulated_annealing) ... ok
+test_local_trace_events (test_core.TestTraceAndMetrics.test_local_trace_events) ... ok
+test_measure_and_csv (test_core.TestTraceAndMetrics.test_measure_and_csv) ... ok
+test_trace_roundtrip (test_core.TestTraceAndMetrics.test_trace_roundtrip) ... ok
+test_trace_truncation (test_core.TestTraceAndMetrics.test_trace_truncation) ... ok
+test_data_files (test_kakurasu.TestModel.test_data_files) ... ok
+test_full_prune_cuts_early (test_kakurasu.TestModel.test_full_prune_cuts_early) ... ok
+test_heuristic_admissible_on_solution_path (test_kakurasu.TestModel.test_heuristic_admissible_on_solution_path) ... ok
+test_heuristic_and_pruning_against_exhaustive_small_oracle (test_kakurasu.TestModel.test_heuristic_and_pruning_against_exhaustive_small_oracle) ... ok
+test_heuristic_dead_state (test_kakurasu.TestModel.test_heuristic_dead_state) ... ok
+test_prune_keeps_solution_path (test_kakurasu.TestModel.test_prune_keeps_solution_path)
+Cắt tỉa không được bỏ nước đi nằm trên lời giải đúng. ... ok
+test_subset_tables (test_kakurasu.TestModel.test_subset_tables) ... ok
+test_successors_format (test_kakurasu.TestModel.test_successors_format) ... ok
+test_to_view (test_kakurasu.TestModel.test_to_view) ... ok
+test_unique_solution_4x4 (test_kakurasu.TestModel.test_unique_solution_4x4) ... ok
+test_verify (test_kakurasu.TestModel.test_verify) ... ok
+test_verify_rejects_wrong_dimensions (test_kakurasu.TestModel.test_verify_rejects_wrong_dimensions) ... ok
+test_verify_requires_integer_binary_cells (test_kakurasu.TestModel.test_verify_requires_integer_binary_cells) ... ok
+test_all_puzzles_full_prune (test_kakurasu.TestSolvers.test_all_puzzles_full_prune) ... ok
+test_astar_basic_prune_solves_all (test_kakurasu.TestSolvers.test_astar_basic_prune_solves_all) ... ok
+test_astar_can_expand_infinite_priority_on_unsatisfiable_input (test_kakurasu.TestSolvers.test_astar_can_expand_infinite_priority_on_unsatisfiable_input) ... ok
+test_saved_traces_reproduce_solver_steps (test_kakurasu.TestSolvers.test_saved_traces_reproduce_solver_steps) ... ok
+test_trace (test_kakurasu.TestSolvers.test_trace) ... ok
+
+----------------------------------------------------------------------
+Ran 33 tests in 1.045s
+
+OK

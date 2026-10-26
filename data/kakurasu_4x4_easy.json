@@ -1,0 +1,20 @@
+{
+  "puzzle": "kakurasu",
+  "name": "4x4_easy",
+  "source": "https://www.puzzle-kakurasu.com/",
+  "puzzle_id": "9272227",
+  "rows": 4,
+  "cols": 4,
+  "row_clues": [
+    2,
+    4,
+    4,
+    5
+  ],
+  "col_clues": [
+    3,
+    5,
+    7,
+    2
+  ]
+}

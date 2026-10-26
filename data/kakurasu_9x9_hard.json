@@ -1,0 +1,30 @@
+{
+  "puzzle": "kakurasu",
+  "name": "9x9_hard",
+  "source": "https://www.puzzle-kakurasu.com/",
+  "puzzle_id": "5803750",
+  "rows": 9,
+  "cols": 9,
+  "row_clues": [
+    41,
+    2,
+    11,
+    23,
+    16,
+    28,
+    44,
+    30,
+    19
+  ],
+  "col_clues": [
+    24,
+    10,
+    24,
+    25,
+    36,
+    38,
+    25,
+    22,
+    18
+  ]
+}

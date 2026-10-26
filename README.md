@@ -19,3 +19,17 @@ python -m unittest discover tests
 ```
 
 Yêu cầu: Python 3.8+, không cần thư viện ngoài.
+
+## Phần TV3 - Kakurasu
+
+- Mô hình, luật, heuristic và API: [giải thích Kakurasu](docs/giai_thich_kakurasu.md).
+- Phần báo cáo và phân tích từng input: [báo cáo TV3](docs/bao_cao_tv3_kakurasu.md).
+- Số liệu thô và cấu hình: [thực nghiệm 24/10/2026](docs/experiments/tv3-2026-10-24/).
+- Chạy lại (thư mục kết quả phải chưa tồn tại):
+
+```sh
+python -B tools/tv3_kakurasu_experiment.py --output results/tv3-new --repeats 3 --max-nodes 50000 --time-limit 5 --memory-time-limit 30
+```
+
+Công cụ này chỉ tạo số liệu cho phần Kakurasu của TV3. Benchmark tổng hợp hai bài,
+biểu đồ chung và ZIP nộp bài là phần bàn giao cho TV5. Không cần thư viện ngoài.
