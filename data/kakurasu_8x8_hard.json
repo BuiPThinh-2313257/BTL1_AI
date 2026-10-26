@@ -1,0 +1,28 @@
+{
+  "puzzle": "kakurasu",
+  "name": "8x8_hard",
+  "source": "https://www.puzzle-kakurasu.com/",
+  "puzzle_id": "2882599",
+  "rows": 8,
+  "cols": 8,
+  "row_clues": [
+    15,
+    16,
+    28,
+    17,
+    35,
+    17,
+    15,
+    23
+  ],
+  "col_clues": [
+    30,
+    24,
+    21,
+    22,
+    16,
+    23,
+    34,
+    10
+  ]
+}
