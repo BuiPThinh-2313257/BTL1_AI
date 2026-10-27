@@ -72,8 +72,42 @@ class Pipes(Problem):
             yield (rot, state + (new_conns,), 1.0)
 
     def is_goal(self, state):
-        """Chỉ thành công khi đã gán đủ tất cả các ô và thoả mãn cắt tỉa."""
-        return len(state) == len(self.grid)
+        """Chỉ thành công khi đã gán đủ ô và TOÀN BỘ lưới tạo thành 1 mạng liên thông."""
+        if len(state) != len(self.grid):
+            return False
+            
+        # Kiểm tra tính liên thông bằng BFS bắt đầu từ ô 0
+        visited = set()
+        queue = [0]
+        visited.add(0)
+        
+        while queue:
+            curr = queue.pop(0)
+            cr, cc = divmod(curr, self.cols)
+            curr_conns = state[curr]
+            
+            if "right" in curr_conns and cc < self.cols - 1:
+                nxt = curr + 1
+                if "left" in state[nxt] and nxt not in visited:
+                    visited.add(nxt)
+                    queue.append(nxt)
+            if "down" in curr_conns and cr < self.rows - 1:
+                nxt = curr + self.cols
+                if "up" in state[nxt] and nxt not in visited:
+                    visited.add(nxt)
+                    queue.append(nxt)
+            if "left" in curr_conns and cc > 0:
+                nxt = curr - 1
+                if "right" in state[nxt] and nxt not in visited:
+                    visited.add(nxt)
+                    queue.append(nxt)
+            if "up" in curr_conns and cr > 0:
+                nxt = curr - self.cols
+                if "down" in state[nxt] and nxt not in visited:
+                    visited.add(nxt)
+                    queue.append(nxt)
+                    
+        return len(visited) == len(self.grid)
 
     def to_view(self, state):
         """Trả về dạng lưới để ghi log/trace cho giao diện."""

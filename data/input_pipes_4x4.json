@@ -1,33 +1,30 @@
 {
   "problem": "Pipes Grid Puzzle",
-  "grid_size": {
-    "rows": 4,
-    "cols": 4
-  },
+  "grid_size": { "rows": 4, "cols": 4 },
   "grid": [
     [
       { "row": 0, "col": 0, "type": "L-shape", "connections": ["right", "down"], "rotatable": false },
-      { "row": 0, "col": 1, "type": "T-shape", "connections": ["up", "left", "right"], "rotatable": true },
-      { "row": 0, "col": 2, "type": "I-shape", "connections": ["up", "down"], "rotatable": true },
+      { "row": 0, "col": 1, "type": "I-shape", "connections": ["up", "down"], "rotatable": true },
+      { "row": 0, "col": 2, "type": "I-shape", "connections": ["left", "right"], "rotatable": true },
       { "row": 0, "col": 3, "type": "L-shape", "connections": ["up", "right"], "rotatable": true }
     ],
     [
-      { "row": 1, "col": 0, "type": "I-shape", "connections": ["left", "right"], "rotatable": true },
-      { "row": 1, "col": 1, "type": "I-shape", "connections": ["left", "right"], "rotatable": true },
+      { "row": 1, "col": 0, "type": "T-shape", "connections": ["left", "right", "down"], "rotatable": true },
+      { "row": 1, "col": 1, "type": "T-shape", "connections": ["up", "right", "down"], "rotatable": true },
       { "row": 1, "col": 2, "type": "L-shape", "connections": ["up", "right"], "rotatable": true },
-      { "row": 1, "col": 3, "type": "T-shape", "connections": ["left", "right", "down"], "rotatable": true }
+      { "row": 1, "col": 3, "type": "I-shape", "connections": ["left", "right"], "rotatable": true }
     ],
     [
-      { "row": 2, "col": 0, "type": "T-shape", "connections": ["up", "left", "down"], "rotatable": true },
-      { "row": 2, "col": 1, "type": "Cross", "connections": ["up", "down", "left", "right"], "rotatable": true },
-      { "row": 2, "col": 2, "type": "T-shape", "connections": ["up", "left", "right"], "rotatable": true },
-      { "row": 2, "col": 3, "type": "L-shape", "connections": ["left", "down"], "rotatable": true }
+      { "row": 2, "col": 0, "type": "I-shape", "connections": ["left", "right"], "rotatable": true },
+      { "row": 2, "col": 1, "type": "L-shape", "connections": ["right", "down"], "rotatable": true },
+      { "row": 2, "col": 2, "type": "L-shape", "connections": ["left", "down"], "rotatable": true },
+      { "row": 2, "col": 3, "type": "I-shape", "connections": ["left", "right"], "rotatable": true }
     ],
     [
       { "row": 3, "col": 0, "type": "L-shape", "connections": ["right", "down"], "rotatable": true },
-      { "row": 3, "col": 1, "type": "T-shape", "connections": ["up", "right", "down"], "rotatable": true },
+      { "row": 3, "col": 1, "type": "I-shape", "connections": ["up", "down"], "rotatable": true },
       { "row": 3, "col": 2, "type": "I-shape", "connections": ["up", "down"], "rotatable": true },
-      { "row": 3, "col": 3, "type": "L-shape", "connections": ["up", "right"], "rotatable": true }
+      { "row": 3, "col": 3, "type": "L-shape", "connections": ["right", "down"], "rotatable": true }
     ]
   ]
 }
