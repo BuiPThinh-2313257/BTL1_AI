@@ -1,14 +1,17 @@
-"""TV4 - GUI demo step-by-step cho Pipes và Kakurasu 4x4.
+"""TV4 – GĐ2: GUI xem trace mẫu hoặc chạy solver thật cho hai bài 4x4.
 
-Chạy tại thư mục gốc của dự án:
-    python gui/viewer.py
-
-Tkinter thuộc thư viện chuẩn Python; không cần cài package bên ngoài.
+Chạy: python gui/viewer.py
+Solver chạy qua tiến trình con (gui.live_runner), không chặn giao diện.
+Không sửa core, puzzles hay benchmark của các thành viên khác.
 """
 
 from __future__ import annotations
 
+import json
+import os
+import subprocess
 import sys
+import tempfile
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox
@@ -19,8 +22,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from core.trace import load_trace
+from gui.live_runner import DEFAULT_INPUTS
 
-# trace đã có trong repository của nhóm, không phải trace tự tạo
+# Trace THẬT đã có trong repository của nhóm, không phải trace tự tạo.
 TRACES = {
     "pipes": {
         "DFS": "pipes_4x4_dfs.json",
@@ -145,6 +149,11 @@ class Viewer(tk.Tk):
         self.after_id: Optional[str] = None
         self.slider_update = False
         self.current_path = ""
+        self.selected_input: Optional[Path] = None
+        self.running_solver = False
+        self.solver_process: Optional[subprocess.Popen] = None
+        self.solver_temp_path: Optional[Path] = None
+        self.solver_poll_id: Optional[str] = None
 
         self._create_widgets()
         self._load_builtin()
@@ -180,7 +189,10 @@ class Viewer(tk.Tk):
         self._label(title_block, "AI SEARCH VISUALIZER", 20, bold=True).pack(anchor="w")
         self._label(title_block, "BTL1  ·  TV4 – Giao diện  ·  Pipes & Kakurasu 4×4",
                     10, "muted").pack(anchor="w")
-        self._button(header, "MỞ TRACE JSON", self._open_json, prominent=True).pack(side="right")
+        self.save_button = self._button(header, "LƯU TRACE", self._save_json)
+        self.save_button.pack(side="right", padx=(7, 0))
+        self.open_button = self._button(header, "MỞ TRACE JSON", self._open_json)
+        self.open_button.pack(side="right")
 
         selectors = self._panel(self)
         selectors.pack(fill="x", padx=24, pady=(0, 13), ipady=8)
@@ -196,6 +208,19 @@ class Viewer(tk.Tk):
         self.algorithm_buttons = tk.Frame(algorithms, bg=COL["panel"])
         self.algorithm_buttons.pack(anchor="w")
         self._update_selectors()
+
+        input_area = tk.Frame(selectors, bg=COL["panel"])
+        input_area.pack(side="right", padx=(16, 16))
+        self._label(input_area, "INPUT 4×4", 9, "muted", bold=True).pack(anchor="w", pady=(0, 5))
+        input_buttons = tk.Frame(input_area, bg=COL["panel"])
+        input_buttons.pack(anchor="e")
+        self.input_button = self._button(input_buttons, "CHỌN INPUT", self._choose_input)
+        self.input_button.pack(side="left", padx=(0, 7))
+        self.run_button = self._button(input_buttons, "▶ CHẠY SOLVER", self._run_solver, prominent=True)
+        self.run_button.pack(side="left")
+        self.input_caption = self._label(input_area, "", 9, "muted")
+        self.input_caption.pack(anchor="e", pady=(4, 0))
+        self._refresh_input_caption()
 
         main = tk.Frame(self, bg=COL["bg"])
         main.pack(fill="both", expand=True, padx=24)
@@ -287,6 +312,136 @@ class Viewer(tk.Tk):
         self.status_line = self._label(self, "", 9, "muted")
         self.status_line.pack(fill="x", padx=26, pady=(0, 6))
 
+    def _refresh_input_caption(self) -> None:
+        path = self.selected_input or DEFAULT_INPUTS[self.puzzle]
+        self.input_caption.configure(text=path.name)
+
+    def _choose_input(self) -> None:
+        if self.running_solver:
+            return
+        path = filedialog.askopenfilename(
+            title="Chọn input {} 4×4".format(self.puzzle),
+            initialdir=str(ROOT / "data"),
+            filetypes=[("JSON input", "*.json"), ("Tất cả file", "*.*")])
+        if path:
+            self.selected_input = Path(path)
+            self._refresh_input_caption()
+
+    def _run_solver(self) -> None:
+        """Chạy solver trong tiến trình con; Tk vẫn phản hồi khi solver chạy."""
+        if self.running_solver:
+            return
+        self._stop()
+        self.running_solver = True
+        self.run_button.configure(state="disabled", text="ĐANG CHẠY...")
+        self.input_button.configure(state="disabled")
+        self.open_button.configure(state="disabled")
+        self.save_button.configure(state="disabled")
+        self.status_line.configure(text="Đang giải {} / {} trên input thật...".format(
+            self.puzzle, self.algorithm))
+
+        fd, fname = tempfile.mkstemp(prefix="tv4_solver_", suffix=".json")
+        os.close(fd)
+        self.solver_temp_path = Path(fname)
+        selected_algo = self.algorithm.lower().replace(" ", "_").replace("*", "star")
+        # Dùng trực tiếp tên hàm trong core/search.py.
+        if self.algorithm == "A*":
+            selected_algo = "astar"
+        command = [
+            sys.executable, "-m", "gui.live_runner",
+            "--puzzle", self.puzzle,
+            "--algorithm", selected_algo,
+            "--input", str(self.selected_input or DEFAULT_INPUTS[self.puzzle]),
+            "--output", fname,
+            "--max-nodes", "50000",
+            "--time-limit", "5",
+            "--max-steps", "10000",
+            "--seed", "0",
+            "--memory",
+        ]
+        try:
+            flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+            self.solver_process = subprocess.Popen(
+                command, cwd=str(ROOT), stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, text=True, encoding="utf-8",
+                creationflags=flags)
+            self.solver_poll_id = self.after(100, self._poll_solver)
+        except OSError as exc:
+            self._finish_run()
+            messagebox.showerror("Không chạy được solver", str(exc))
+
+    def _poll_solver(self) -> None:
+        self.solver_poll_id = None
+        process = self.solver_process
+        if process is None:
+            return
+        if process.poll() is None:
+            self.solver_poll_id = self.after(100, self._poll_solver)
+            return
+        stdout, stderr = process.communicate()
+        target = self.solver_temp_path
+        self._finish_run(clear_temp=False)
+        if process.returncode != 0:
+            messagebox.showerror("Solver báo lỗi", (stderr or stdout or
+                                  "Không nhận được kết quả từ solver.")[-1800:])
+            self.status_line.configure(text="Chạy solver thất bại; trace trước đó vẫn còn.")
+            if target is not None:
+                target.unlink(missing_ok=True)
+            self.solver_temp_path = None
+            return
+        try:
+            if target is None:
+                raise ValueError("Không có tệp kết quả của solver")
+            data = load_trace(str(target))
+            validate_trace(data)
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            messagebox.showerror("Trace mới không hợp lệ", str(exc))
+            return
+        finally:
+            if target is not None:
+                target.unlink(missing_ok=True)
+            self.solver_temp_path = None
+        self._apply_trace_data(data, "LIVE · " + str(data.get("input") or "input"))
+        status = data.get("result", {}).get("status", "?")
+        warning = " · Trace bị cắt" if data.get("truncated") else ""
+        self.status_line.configure(text="Solver thật: {} / {} · {}{}".format(
+            self.puzzle, self.algorithm, status.upper(), warning))
+
+    def _finish_run(self, clear_temp: bool = True) -> None:
+        self.running_solver = False
+        if self.solver_poll_id is not None:
+            self.after_cancel(self.solver_poll_id)
+            self.solver_poll_id = None
+        self.solver_process = None
+        if clear_temp and self.solver_temp_path is not None:
+            try:
+                self.solver_temp_path.unlink()
+            except OSError:
+                pass
+            self.solver_temp_path = None
+        self.run_button.configure(state="normal", text="▶ CHẠY SOLVER")
+        self.input_button.configure(state="normal")
+        self.open_button.configure(state="normal")
+        self.save_button.configure(state="normal")
+
+    def _save_json(self) -> None:
+        if self.running_solver or not self.trace:
+            return
+        name = "{}_{}_live.json".format(
+            self.puzzle, self.trace.get("algorithm", "search"))
+        dest = filedialog.asksaveasfilename(
+            title="Lưu trace để chia sẻ / thuyết trình", defaultextension=".json",
+            initialdir=str(ROOT / "traces"), initialfile=name,
+            filetypes=[("JSON", "*.json")])
+        if not dest:
+            return
+        try:
+            with open(dest, "w", encoding="utf-8") as handle:
+                json.dump(self.trace, handle, ensure_ascii=False, indent=2)
+            self.status_line.configure(text="Đã lưu trace: {}".format(dest))
+        except OSError as exc:
+            messagebox.showerror("Không lưu được trace", str(exc))
+
     def _refresh_speed(self) -> None:
         self.speed_label.configure(text="{} bước/s".format(self.speed_var.get()))
 
@@ -321,9 +476,11 @@ class Viewer(tk.Tk):
                                    lambda m=mode: self._choose_mode(m))
 
     def _choose_puzzle(self, puzzle: str) -> None:
-        if puzzle == self.puzzle:
+        if self.running_solver or puzzle == self.puzzle:
             return
         self.puzzle = puzzle
+        self.selected_input = None
+        self._refresh_input_caption()
         self.algorithm = "DFS"
         self.mode = "search"
         self._update_selectors()
@@ -331,7 +488,7 @@ class Viewer(tk.Tk):
         self._load_builtin()
 
     def _choose_algo(self, algorithm: str) -> None:
-        if algorithm == self.algorithm:
+        if self.running_solver or algorithm == self.algorithm:
             return
         self.algorithm = algorithm
         self._update_algorithms()
@@ -353,6 +510,8 @@ class Viewer(tk.Tk):
         self._read_trace(path)
 
     def _open_json(self) -> None:
+        if self.running_solver:
+            return
         path = filedialog.askopenfilename(
             title="Chọn trace JSON", initialdir=str(ROOT / "traces"),
             filetypes=[("JSON trace", "*.json"), ("Tất cả file", "*.*")])
@@ -366,25 +525,34 @@ class Viewer(tk.Tk):
         except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
             messagebox.showerror("Không mở được trace", "{}\n\n{}".format(path, exc))
             return
+        self._apply_trace_data(data, path.name)
+        extra = "  ·  TRACE ĐÃ BỊ CẮT" if data.get("truncated") else ""
+        self.status_line.configure(text="Đang đọc: {}{}".format(path.name, extra))
+
+    def _apply_trace_data(self, data: Dict[str, Any], source_name: str) -> None:
         self._stop()
         self.trace = data
-        self.current_path = str(path)
+        self.current_path = source_name
+        if self.puzzle != data["puzzle"]:
+            self.selected_input = None
         self.puzzle = data["puzzle"]
         algorithm = data.get("algorithm", "").lower()
+        algo_ids = {"DFS": "dfs", "A*": "astar", "Hill Climbing": "hill_climbing"}
         self.algorithm = next((name for name in TRACES[self.puzzle]
-                               if algorithm == name.lower().replace(" ", "_")),
+                               if algorithm == algo_ids.get(name)),
                               algorithm or "Khác")
         self._update_selectors()
         self._update_algorithms()
+        self._refresh_input_caption()
         if self.mode == "solution" and not data["solution"]:
             self.mode = "search"
         self._update_modes()
         self._set_frames()
-        self.file_text.configure(text="{}\n{} · {}".format(
-            path.name, self.puzzle.upper(), data.get("algorithm", "?")))
+        prune = (data.get("result") or {}).get("kakurasu_prune")
+        self.file_text.configure(text="{}\n{} · {}{}".format(
+            source_name, self.puzzle.upper(), data.get("algorithm", "?"),
+            " · prune=" + prune if prune else ""))
         self._show_metrics()
-        extra = "  ·  TRACE ĐÃ BỊ CẮT" if data.get("truncated") else ""
-        self.status_line.configure(text="Đang đọc: {}{}".format(path.name, extra))
 
     def _set_frames(self) -> None:
         self.frames = get_frames(self.trace, self.mode)
@@ -404,8 +572,10 @@ class Viewer(tk.Tk):
         elapsed = info.get("elapsed")
         self.metrics["elapsed"].set("{:.3f} ms".format(elapsed * 1000)
                                     if isinstance(elapsed, (int, float)) else "—")
-        # Trace hiện tại không chứa phép đo bộ nhớ; KHÔNG được tự tạo số.
-        self.metrics["memory"].set("Không có dữ liệu")
+        peak_kb = info.get("peak_kb")
+        self.metrics["memory"].set("{:.1f} KB".format(peak_kb)
+                                   if isinstance(peak_kb, (int, float))
+                                   else "Không có dữ liệu")
 
     def _seek_to(self, value: str) -> None:
         if not self.slider_update and self.frames:
@@ -598,6 +768,10 @@ class Viewer(tk.Tk):
 
     def _on_close(self) -> None:
         self._stop()
+        if self.solver_process is not None and self.solver_process.poll() is None:
+            self.solver_process.terminate()
+        if self.running_solver:
+            self._finish_run()
         self.destroy()
 
 
