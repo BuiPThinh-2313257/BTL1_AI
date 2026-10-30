@@ -23,7 +23,8 @@ Yêu cầu: Python 3.8+, không cần thư viện ngoài.
 ## Phần TV3 - Kakurasu
 
 - Mô hình, luật, heuristic và API: [giải thích Kakurasu](docs/giai_thich_kakurasu.md).
-- Phần báo cáo và phân tích từng input: [báo cáo TV3](docs/bao_cao_tv3_kakurasu.md).
+- Luật chơi, mô hình, thuật toán và kiểm thử: [báo cáo TV3](docs/bao_cao_tv3_kakurasu.md).
+- Số liệu và phân tích cho chương 5: [thực nghiệm Kakurasu](docs/so_lieu_kakurasu_chuong_5.md).
 - Số liệu thô và cấu hình: [thực nghiệm 24/10/2026](docs/experiments/tv3-2026-10-24/).
 - Chạy lại (thư mục kết quả phải chưa tồn tại):
 
@@ -33,3 +34,6 @@ python -B tools/tv3_kakurasu_experiment.py --output results/tv3-new --repeats 3 
 
 Công cụ này chỉ tạo số liệu cho phần Kakurasu của TV3. Benchmark tổng hợp hai bài,
 biểu đồ chung và ZIP nộp bài là phần bàn giao cho TV5. Không cần thư viện ngoài.
+
+Hình đề/lời giải và bảng trích trace trong báo cáo được tạo lại bằng
+`python tools/build_tv3_report_figures.py` (riêng công cụ vẽ hình này cần Pillow).

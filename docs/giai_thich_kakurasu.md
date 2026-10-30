@@ -77,7 +77,7 @@ Heuristic trả về `inf` ở trạng thái chết, nên các trạng thái đ�
 
 ## 6. Kết quả sơ bộ trước 24/10/2026 (`core.search`, time_limit = 10 s)
 
-Bảng này là ghi nhận sơ bộ của phiên bản ban đầu, không phải bộ đo có kiểm soát mới. Bảng đầy đủ 12 input, thời gian/bộ nhớ, giới hạn và phân tích ở [báo cáo TV3](bao_cao_tv3_kakurasu.md). Không gộp các số liệu có ngân sách khác nhau.
+Bảng này là ghi nhận sơ bộ của phiên bản ban đầu, không phải bộ đo có kiểm soát mới. Bảng đầy đủ 12 input, thời gian/bộ nhớ, giới hạn và phân tích ở [số liệu Kakurasu cho chương 5](so_lieu_kakurasu_chuong_5.md). Không gộp các số liệu có ngân sách khác nhau.
 
 | Đề | DFS `basic` | BFS `basic` | A* `basic` | DFS `full` |
 |---|---|---|---|---|
