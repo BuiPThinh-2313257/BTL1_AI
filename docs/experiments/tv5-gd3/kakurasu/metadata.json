@@ -1,0 +1,41 @@
+{
+  "created_utc": "2026-10-30T23:00:29.928121+00:00",
+  "python": "3.13.0 (tags/v3.13.0:60403a5, Oct  7 2024, 09:38:07) [MSC v.1941 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "inputs": {
+    "data\\kakurasu_4x4_easy.json": "16f393491731e719b303783c81890bb79d38b7cbfb217303fa8155c6aeba4c1b",
+    "data\\kakurasu_4x4_hard.json": "1ed0564fc1b2ed1b5493eda2d52d3506ded8aeeacf7dc885a4dcc6054c4db026",
+    "data\\kakurasu_5x5_easy.json": "4e57f844fa8b005b0edf20fe7d0a27dd91ebb53a3a5d4eedff419f3a315e7264",
+    "data\\kakurasu_5x5_hard.json": "cf75b111c9979d27afebd49892dbda0c862fa00aafbbbef6128eb3046e8900fd",
+    "data\\kakurasu_6x6_easy.json": "bee9d822a7d786cb65b70992f8c47943471cf2b488bc52adc0723192d865eacf",
+    "data\\kakurasu_6x6_hard.json": "31f5eff515a30a3dead848818bcd6f1bf6b3a043bae7390fbde52494cbc33f4c",
+    "data\\kakurasu_7x7_easy.json": "55c56b935498f8dd72374a5b067fd521ba3bd80dcf323eaa8315d7cbcbc2953a",
+    "data\\kakurasu_7x7_hard.json": "1ec0a39b5b286c8bde90278f9247f76845d0ca109e54bdbb16a48c7098954c35",
+    "data\\kakurasu_8x8_easy.json": "3b7c8b48ff14047657a7663041a3f57b61382f87629de004887a958bbd32e35d",
+    "data\\kakurasu_8x8_hard.json": "8c8d14c49d6a0057a6e2c5264255ac04c787bbd31e6b0fba63ea98af5ce165ff",
+    "data\\kakurasu_9x9_easy.json": "3d7d8baeaf83310f3665f10488591f412d2720e44f619be7a7b85dcb82e54d1c",
+    "data\\kakurasu_9x9_hard.json": "286e1e63d2f65a357476375ba4956d975116c14c4dbf6e2e023c33fda4667492"
+  },
+  "source_sha256": {
+    "benchmark.py": "524193f68595acdb23199c2dd1cd4ec32a4e3fbc69dc5a2aa8766a842becc55e",
+    "verify.py": "5c7173c2d2d8fda893a580b5bed516b3b1f8c46fe570fe0595d6b3f7b4ff77e6",
+    "core\\search.py": "52cfaf5b6f271563ca44031f5601f398ced7cf91ea42872776f6ae213b659e4b",
+    "core\\metrics.py": "7b7d7bd3429111a26644a41427b612b4e5c6b39f1478ebc8d0ee0c6244085a86",
+    "puzzles\\kakurasu.py": "9629ec6745de534e39292b10de448482f6594349bc6499e1d44920af2dabc350",
+    "puzzles\\pipes.py": "947e38705bdff3cd47ff1948eb6578e4ce66e29f8e8334cbf69f79c45f9747ba"
+  },
+  "settings": {
+    "puzzle": "kakurasu",
+    "algorithms": null,
+    "prune": "basic",
+    "repeats": 3,
+    "max_nodes": 50000,
+    "time_limit": 5.0,
+    "seed": 0,
+    "track_memory": true
+  },
+  "measurement": "core.metrics.measure(): time and memory are separate runs; peak_kb = Python tracemalloc allocations (not RSS); time excludes file loading and GUI tracing. Only the timed run is independently verified.",
+  "finished_utc": "2026-10-30T23:01:59.883655+00:00",
+  "runs": 72,
+  "issues": 0
+}

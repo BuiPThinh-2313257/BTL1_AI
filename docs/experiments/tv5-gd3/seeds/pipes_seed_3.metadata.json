@@ -1,0 +1,30 @@
+{
+  "created_utc": "2026-10-31T11:42:45.519299+00:00",
+  "python": "3.13.0 (tags/v3.13.0:60403a5, Oct  7 2024, 09:38:07) [MSC v.1941 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "inputs": {
+    "data\\input_pipes_4x4.json": "6107437c91e01e81b2542b508c25ed980e6cac49fc051f18e5186a9641879176"
+  },
+  "source_sha256": {
+    "benchmark.py": "88326d155a9a50ef0fdbe047cdc2bf02569ead81eba687d6530de5d66018681e",
+    "verify.py": "5c7173c2d2d8fda893a580b5bed516b3b1f8c46fe570fe0595d6b3f7b4ff77e6",
+    "core\\search.py": "52cfaf5b6f271563ca44031f5601f398ced7cf91ea42872776f6ae213b659e4b",
+    "core\\metrics.py": "7b7d7bd3429111a26644a41427b612b4e5c6b39f1478ebc8d0ee0c6244085a86",
+    "puzzles\\kakurasu.py": "9629ec6745de534e39292b10de448482f6594349bc6499e1d44920af2dabc350",
+    "puzzles\\pipes.py": "25aa5b543094a952c581b5fbfd4c84871c6e174a90176823568e3f1d8026257c"
+  },
+  "settings": {
+    "puzzle": "pipes",
+    "algorithms": null,
+    "prune": "basic",
+    "repeats": 1,
+    "max_nodes": 50000,
+    "time_limit": 5.0,
+    "seed": 3,
+    "track_memory": true
+  },
+  "measurement": "core.metrics.measure(): time and memory are separate runs; peak_kb = Python tracemalloc allocations (not RSS); time excludes file loading and GUI tracing. Only the timed run is independently verified.",
+  "finished_utc": "2026-10-31T11:42:45.736972+00:00",
+  "runs": 2,
+  "issues": 0
+}
