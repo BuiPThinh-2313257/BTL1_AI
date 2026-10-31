@@ -1,325 +1,362 @@
-# Phần báo cáo TV3: mô hình, hiện thực và thực nghiệm Kakurasu
+# Kakurasu
 
-Ngày hoàn thiện: 24/10/2026. Phạm vi: phần bài 2 của TV3 để TV1 ghép vào báo cáo nhóm.
-Đối chiếu đề gốc: [BTL1.pdf](../BTL1.pdf); phân công TV3 trong ảnh của nhóm:
-mô hình bài 2, heuristic, tự ghép solver, test/trace, báo cáo phần bài 2 và phân tích số liệu.
-Đây chưa phải báo cáo hoàn chỉnh cho cả Pipes và Kakurasu.
+## 1. Luật chơi, đề mẫu và lời giải
 
-## 1. Bài toán và cách biểu diễn
+Kakurasu gồm một bảng có n hàng và m cột. Người chơi chọn một số ô để tô đen.
+Chỉ số hàng và cột được đánh số từ 1. Một ô đen ở hàng i, cột j đóng góp j điểm
+vào tổng hàng i và i điểm vào tổng cột j. Ô trắng đóng góp 0. Mục tiêu là
+làm cho tổng có trọng số của mọi hàng và mọi cột bằng đúng gợi ý tương ứng.
+Không có yêu cầu các ô đen phải liên thông hoặc không được tiếp xúc nhau.
 
-Kakurasu yêu cầu chọn các ô đen trên lưới n hàng, m cột. Ô đen tại (i,j), đánh số từ 1,
-đóng góp j vào tổng hàng i và i vào tổng cột j. Mọi tổng phải khớp gợi ý tương ứng.
-Mô hình dùng tiền tố tuple các giá trị 0/1 theo thứ tự hàng, từ trái sang phải.
-Trạng thái đầu là tuple rỗng; mỗi hành động quyết định một ô tiếp theo; đích có đủ n*m
-ô và khớp tất cả tổng. Mỗi tiền tố chỉ có một đường từ gốc nên không có trạng thái
-trùng đường trong cây này. Cây đầy đủ có tối đa 2^(n*m+1)-1 node, 2^(n*m) lá.
+![Đề Kakurasu 4×4 và lời giải có kiểm tra tổng hàng, cột](images/kakurasu_de_va_loi_giai.png)
 
-Chi phí một bước là 1 nếu tô đen, 0 nếu để trắng. Vì vậy g là số ô đen đã tô.
-Mọi lời giải đều có n*m hành động; tối ưu số ô đen không đồng nghĩa tối ưu độ dài đường đi.
-BFS ưu tiên số hành động và DFS trả lời giải đầu tiên, nên không bảo đảm tối ưu số ô đen.
-A* dùng f=g+h để tìm lời giải tối ưu theo chi phí đã định nghĩa nếu chạy đến đích trong
-ngân sách. Thực nghiệm bên dưới chỉ xác nhận tính hợp lệ của lời giải, không vét cạn để
-chứng minh tối ưu cho từng đề lớn. Chỉ đề 4x4 easy đã được test vét cạn tính duy nhất.
+*Hình 1. Đề 4×4 có mã 9272227 và lời giải. Hình được dựng từ
+`data/kakurasu_4x4_easy.json`; lời giải đã được kiểm tra bằng `verify()`.
+Dấu ? biểu thị ô chưa quyết định.*
 
-## 2. Cắt tỉa và heuristic
+Đề mẫu có gợi ý hàng R = [2, 4, 4, 5] và gợi ý cột C = [3, 5, 7, 2].
+Quy ước 1 là đen, 0 là trắng, lời giải là:
 
-`basic` bỏ nhánh khi tổng hàng hoặc cột vượt gợi ý. `full` yêu cầu phần thiếu còn biểu diễn
-được bởi tổng tập con các trọng số của ô chưa quyết định trên hàng/cột vừa thay đổi.
-Các bảng khả đạt và số phần tử ít nhất được tính trước bằng quy hoạch động trong lúc tạo
-mô hình. Cắt tỉa là kiểm tra ràng buộc miền bài toán; DFS/BFS không dùng heuristic để xếp
-thứ tự frontier dù chúng dùng `full`. API và ví dụ được trình bày ở
-[giải thích mô hình](giai_thich_kakurasu.md).
-
-Với mỗi hàng, lấy số ô ít nhất còn cần để bù tổng hàng trong bài toán nới lỏng chỉ xét hàng,
-rồi cộng thành h_row. Tương tự có h_col cho cột. Đặt h=max(h_row,h_col).
-Mọi lời giải thật cần ít nhất h_row ô đen và ít nhất h_col ô đen; lấy max giữ cận dưới,
-trong khi cộng hai đại lượng sẽ đếm hai lần và có thể đánh giá quá cao.
-Khi một dòng không thể bù phần thiếu, h=inf. Điều kiện riêng từng dòng chỉ là cần,
-không đủ: h hữu hạn không bảo đảm tồn tại lời giải đồng thời cho toàn lưới.
-
-Tính nhất quán: với bước tô giá trị v thuộc {0,1}, một phương án hoàn thành sau bước này
-kết hợp với ô vừa đặt là một phương án cho từng bài toán nới lỏng trước bước đó. Do đó
-h_row(s) <= v+h_row(s') và h_col(s) <= v+h_col(s'); lấy max giữ bất đẳng thức.
-Ở đích hợp lệ h=0. Nếu trạng thái trước đã bất khả thi ở một dòng thì quyết định thêm ô
-không làm nó trở lại khả thi. Lập luận áp dụng cả cận inf với quy ước số học mở rộng.
-Kiểm thử vét cạn trên lưới nhỏ hỗ trợ kiểm tra hiện thực; chứng minh mới là cơ sở cho
-kết luận tổng quát về heuristic.
-
-A* hiện tại vẫn đẩy trạng thái h=inf vào heap. Chúng có ưu tiên sau trạng thái hữu hạn,
-nhưng có thể được mở rộng khi không còn trạng thái hữu hạn, như ở đề vô nghiệm.
-Không được mô tả đây là cơ chế loại bỏ node chết. Trong phạm vi TV3 không sửa solver
-chung của TV1 để thay đổi hành vi này.
-
-## 3. Thiết kế đo và bằng chứng tái lập
-
-- Tập đo cố định: 12 JSON từ 4x4 đến 9x9, mỗi kích thước hai nhãn easy/hard, có source
-  và puzzle_id trong file. Đây là tập nhỏ có sẵn, không phải mẫu ngẫu nhiên đại diện.
-- Thiết kế 12 input x 3 thuật toán (DFS, BFS, A*) x 2 mức cắt tỉa = 72 cấu hình.
-- Mỗi cấu hình chạy 3 lần đo giờ không bật trace/tracemalloc; báo trung vị và min-max.
-  Chạy thêm một lần riêng bật tracemalloc đo peak cấp phát Python, đơn vị KiB=1024 byte.
-  Tổng 288 lượt; không có warm-up riêng, chạy tuần tự theo thứ tự cố định.
-- Mỗi lượt tạo mô hình mới: thời gian và peak đều gồm đọc JSON, tạo mô hình/tính bảng và
-  tìm kiếm; không gồm import thư viện, kiểm tra lời giải hay ghi CSV. Thời gian của lượt
-  tracemalloc không dùng để so tốc độ.
-- Giới hạn chung 50.000 node mở rộng/lượt. Hàng rào thời gian: 5 giây cho lượt đo giờ,
-  30 giây cho lượt đo bộ nhớ. Solver kiểm tra thời gian mỗi 256 node nên không phải
-  timeout cứng. Lượt bộ nhớ được đối chiếu trạng thái, số node, frontier, cost và lời giải
-  với lượt đo giờ trước khi ghép hai số liệu.
-- `node_limit` nghĩa là chưa giải được trong ngân sách; không có nghĩa vô nghiệm và thời
-  gian dừng đó không phải thời gian giải. Peak ở lượt bị giới hạn là peak đến lúc dừng.
-- Peak Python không phải RSS hay toàn bộ RAM của tiến trình. Không bật đo bộ nhớ khi đo
-  giờ; không coi một lượt peak là ước lượng phương sai bộ nhớ. Ba lượt giờ chỉ cho mô tả
-  độ dao động cục bộ, không đủ để khẳng định ý nghĩa thống kê.
-- Giữ nguyên mức cắt tỉa để so thuật toán; giữ nguyên thuật toán để so cắt tỉa. Việc so
-  DFS basic với A* full sẽ trộn hai tác động. Mọi thuật toán cùng chịu chi phí tính bảng.
-
-Máy đo: Intel Core i7-13650HX, 14 lõi/20 luồng; RAM vật lý 16.873.545.728 byte
-(khoảng 15,71 GiB). Hệ điều hành `Windows-11-10.0.26200-SP0`; Python `3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]`.
-Thời điểm đo: 24/10/2026 12:02:14 đến 12:04:08, UTC+7.
-Không cố định CPU affinity hay kiểm soát tải nền. Các con số là kết quả trên máy này.
-
-Mã nền Git: `3de2bfddc74ac2479143a468b5d380cb38c52b41` trên nhánh `tv3-kakurasu`, cộng các thay đổi TV3
-chưa commit tại lúc đo. SHA256 từng file thực sự dùng, hash 12 input, câu lệnh, môi trường
-và trạng thái working tree nằm trong [metadata](experiments/tv3-2026-10-24/metadata.json).
-Không gán kết quả mới cho riêng commit nền. Dữ liệu thô ở
-[raw.csv](experiments/tv3-2026-10-24/raw.csv), tổng hợp ở
-[summary.csv](experiments/tv3-2026-10-24/summary.csv).
-
-Chạy lại từ thư mục gốc repo (thư mục kết quả phải chưa tồn tại):
-
-```sh
-python -B tools/tv3_kakurasu_experiment.py --output results/tv3-new --repeats 3 --max-nodes 50000 --time-limit 5 --memory-time-limit 30
-python -B -m unittest discover -s tests -v
+```text
+0 1 0 0
+0 0 0 1
+1 0 1 0
+0 1 1 0
 ```
 
-Chương trình không dùng thư viện ngoài. Số node tái lập theo thuật toán/thứ tự successor;
-thời gian và peak có thể thay đổi theo phiên bản Python, môi trường và tải máy.
+Ví dụ, hàng 3 có hai ô đen ở cột 1 và 3 nên tổng bằng 1 + 3 = 4.
+Cột 3 có ô đen ở hàng 3 và 4 nên tổng bằng 3 + 4 = 7. Kiểm tra toàn bộ lời giải
+cho tổng hàng [2,4,4,5] và tổng cột [3,5,7,2], khớp với các gợi ý.
 
-## 4. Kết quả
+## 2. Mô hình hóa và định dạng input JSON
 
-Cả 72 cấu hình có ba lượt đo giờ trùng trạng thái và thống kê tìm kiếm; lượt đo bộ nhớ
-cũng trùng đường tìm kiếm. Có 55/72 cấu hình giải được (220/288 lượt), 17/72 cấu hình
-đạt giới hạn node; không lượt nào dừng vì giới hạn thời gian. Mọi lời giải trả về đều
-qua kiểm tra đúng kích thước, ô nguyên 0/1, tổng hàng/cột, chi phí và số hành động.
+### 2.1. Trạng thái và trạng thái ban đầu
 
-| Mức cắt tỉa | DFS giải được | BFS giải được | A* giải được |
-|---|---:|---:|---:|
-| basic | 4/12 | 3/12 | 12/12 |
-| full | 12/12 | 12/12 | 12/12 |
+Trạng thái là tuple bất biến s = (x₁, …, xₖ), với mỗi x thuộc {0, 1} và
+0 ≤ k ≤ n·m. Tuple lưu các ô đã quyết định theo từng hàng, từ trái sang phải.
+Các ô sau tiền tố này chưa được quyết định; chúng được xuất thành `null` trong
+view JSON. Trạng thái ban đầu là tuple rỗng `()`.
 
-### 4.1. Số node mở rộng theo input
+Ví dụ, `s = (0, 1, 0, 0)` trên bảng 4×4 nghĩa là hàng đầu đã được quyết định
+trắng–đen–trắng–trắng, còn ba hàng sau chưa quyết định.
 
-`L` = dừng ở giới hạn 50.000 node. Dấu L là quan sát bị giới hạn, không phải số node
-cần để giải. Các bộ đếm dùng nguyên định nghĩa của core: DFS/A* không tính node đích
-vào nodes_expanded, BFS kiểm tra đích khi sinh node con. Trace có thể có sự kiện expand
-cho đích nhưng bộ đếm không tăng; không đồng nhất số sự kiện trace với số node mở rộng.
+Mỗi tiền tố có đúng một đường đi từ gốc. Trước cắt tỉa, cây có độ sâu n·m,
+tối đa 2^(n·m) lá và 2^(n·m + 1) − 1 node tính cả gốc và các tiền tố.
 
-| Input | DFS basic | BFS basic | A* basic | DFS full | BFS full | A* full |
-|---|---:|---:|---:|---:|---:|---:|
-| 4x4_easy | 483 | 638 | 16 | 16 | 16 | 16 |
-| 4x4_hard | 243 | 796 | 16 | 16 | 16 | 16 |
-| 5x5_easy | L | L | 25 | 25 | 25 | 25 |
-| 5x5_hard | 37182 | L | 36 | 25 | 36 | 36 |
-| 6x6_easy | 276 | 5679 | 37 | 36 | 37 | 37 |
-| 6x6_hard | L | L | 91 | 43 | 125 | 91 |
-| 7x7_easy | L | L | 64 | 50 | 64 | 64 |
-| 7x7_hard | L | L | 88 | 49 | 91 | 88 |
-| 8x8_easy | L | L | 221 | 199 | 243 | 221 |
-| 8x8_hard | L | L | 1305 | 1120 | 2127 | 1305 |
-| 9x9_easy | L | L | 1082 | 480 | 1327 | 1082 |
-| 9x9_hard | L | L | 368 | 308 | 487 | 368 |
+### 2.2. Hành động, chi phí và trạng thái đích
 
-### 4.2. Thời gian và bộ nhớ từng cấu hình
+Với k = len(s), code xác định ô tiếp theo bằng `(r, c) = divmod(k, m)`.
+Hai hành động là tô đen hoặc để trắng ô này, lần lượt tạo `s + (1,)` và
+`s + (0,)`. Code dùng chỉ số từ 0, còn công thức trọng số dùng chỉ số từ 1.
+`successors(s)` trả về `(action, next_state, cost)` và xét giá trị 1 trước 0.
 
-Trung vị và min-max tính trên ba lượt giờ, đơn vị ms, làm tròn 3 chữ số thập phân chỉ
-để trình bày. File CSV giữ số chưa làm tròn. Peak Python tính KiB từ lượt riêng.
-`max_frontier` là bộ đếm do core trả về, không phải toàn bộ cấu trúc lưu trữ: DFS cũng
-lưu parent của node đã thăm; BFS/A* còn có các bảng phụ nên frontier nhỏ không chứng minh
-bộ nhớ toàn chương trình nhỏ. Hàng `node_limit` chỉ mô tả tài nguyên dùng tới lúc dừng.
+Chi phí một bước là c(s, s′) = v, với v là giá trị vừa thêm. Do đó:
 
-#### DFS / basic
+```text
+g(s) = tổng các giá trị đã quyết định = số ô đen đã tô.
+```
 
-| Input | Trạng thái | Trung vị ms | Min-max ms | Peak Python KiB | max_frontier |
-|---|---|---:|---:|---:|---:|
-| 4x4_easy | solved | 1.628 | 1.592-1.761 | 173.1 | 7 |
-| 4x4_hard | solved | 0.914 | 0.907-0.952 | 93.6 | 8 |
-| 5x5_easy | node_limit | 255.796 | 253.317-268.073 | 21000.3 | 17 |
-| 5x5_hard | solved | 502.082 | 479.962-503.106 | 14908.5 | 16 |
-| 6x6_easy | solved | 4.321 | 3.301-4.451 | 149.2 | 9 |
-| 6x6_hard | node_limit | 797.948 | 788.421-807.967 | 25007.7 | 25 |
-| 7x7_easy | node_limit | 1074.488 | 1044.061-1106.083 | 30085.8 | 35 |
-| 7x7_hard | node_limit | 927.669 | 912.836-933.974 | 30051.5 | 28 |
-| 8x8_easy | node_limit | 1371.745 | 1334.968-1397.139 | 35928.7 | 47 |
-| 8x8_hard | node_limit | 1289.482 | 1265.152-1363.879 | 35856.4 | 41 |
-| 9x9_easy | node_limit | 1706.012 | 1698.663-1830.544 | 42509.1 | 60 |
-| 9x9_hard | node_limit | 1545.949 | 1470.393-1717.517 | 42652.5 | 42 |
+Trạng thái đích phải có đủ n·m ô và thỏa đồng thời:
 
-#### BFS / basic
+```text
+Với mọi hàng i:  Σ(j=1..m) j·x[i,j] = R[i].
+Với mọi cột j:   Σ(i=1..n) i·x[i,j] = C[j].
+```
 
-| Input | Trạng thái | Trung vị ms | Min-max ms | Peak Python KiB | max_frontier |
-|---|---|---:|---:|---:|---:|
-| 4x4_easy | solved | 2.429 | 2.404-2.448 | 378.5 | 236 |
-| 4x4_hard | solved | 2.955 | 2.939-3.064 | 454.1 | 323 |
-| 5x5_easy | node_limit | 336.292 | 295.310-669.772 | 44218.8 | 48169 |
-| 5x5_hard | node_limit | 725.289 | 723.107-731.802 | 33941.0 | 30351 |
-| 6x6_easy | solved | 67.664 | 67.651-71.422 | 3680.3 | 917 |
-| 6x6_hard | node_limit | 742.923 | 719.695-745.217 | 43408.8 | 43222 |
-| 7x7_easy | node_limit | 766.443 | 736.750-913.509 | 43738.4 | 45769 |
-| 7x7_hard | node_limit | 726.312 | 716.623-777.829 | 34192.5 | 29767 |
-| 8x8_easy | node_limit | 777.612 | 763.047-778.212 | 44458.9 | 49243 |
-| 8x8_hard | node_limit | 767.283 | 745.064-785.157 | 44687.5 | 40687 |
-| 9x9_easy | node_limit | 839.235 | 816.485-848.452 | 45360.1 | 49825 |
-| 9x9_hard | node_limit | 799.548 | 779.517-808.592 | 38728.9 | 34308 |
+Với cách tính này, bài toán tối ưu là tìm lời giải có ít ô đen nhất. Số hành động
+luôn bằng n·m vì mỗi ô được quyết định đúng một lần. Hai đại lượng này cần được
+phân biệt khi xét lời giải mà DFS, BFS và A* trả về.
 
-#### A* / basic
+### 2.3. Input JSON
 
-| Input | Trạng thái | Trung vị ms | Min-max ms | Peak Python KiB | max_frontier |
-|---|---|---:|---:|---:|---:|
-| 4x4_easy | solved | 0.233 | 0.226-0.278 | 23.7 | 12 |
-| 4x4_hard | solved | 0.237 | 0.235-0.266 | 23.2 | 11 |
-| 5x5_easy | solved | 0.744 | 0.742-1.310 | 39.0 | 22 |
-| 5x5_hard | solved | 1.479 | 1.296-1.487 | 45.3 | 33 |
-| 6x6_easy | solved | 1.424 | 1.200-1.725 | 47.7 | 13 |
-| 6x6_hard | solved | 4.887 | 4.887-5.261 | 117.2 | 86 |
-| 7x7_easy | solved | 4.008 | 3.288-4.281 | 92.9 | 62 |
-| 7x7_hard | solved | 3.508 | 1.967-4.197 | 108.9 | 68 |
-| 8x8_easy | solved | 11.735 | 8.364-11.925 | 284.2 | 211 |
-| 8x8_hard | solved | 50.640 | 50.133-57.316 | 1473.7 | 1231 |
-| 9x9_easy | solved | 55.808 | 43.726-59.474 | 1265.7 | 1064 |
-| 9x9_hard | solved | 18.900 | 17.999-19.842 | 563.5 | 320 |
+```json
+{
+  "puzzle": "kakurasu",
+  "name": "4x4_easy",
+  "source": "https://www.puzzle-kakurasu.com/",
+  "puzzle_id": "9272227",
+  "rows": 4,
+  "cols": 4,
+  "row_clues": [2, 4, 4, 5],
+  "col_clues": [3, 5, 7, 2]
+}
+```
 
-#### DFS / full
+`Kakurasu.from_file()` đọc `row_clues` và `col_clues`, sau đó suy ra n và m từ
+độ dài hai danh sách. `puzzle_id` và `source` dùng để đối chiếu nguồn đề;
+`rows` và `cols` mô tả kích thước. Hàm đọc hiện chưa kiểm tra hai trường kích
+thước có khớp danh sách gợi ý hay không. Mức cắt tỉa được chọn qua tham số
+`prune` khi tạo mô hình.
 
-| Input | Trạng thái | Trung vị ms | Min-max ms | Peak Python KiB | max_frontier |
-|---|---|---:|---:|---:|---:|
-| 4x4_easy | solved | 0.170 | 0.167-0.206 | 17.0 | 1 |
-| 4x4_hard | solved | 0.179 | 0.172-0.221 | 16.9 | 1 |
-| 5x5_easy | solved | 0.704 | 0.697-0.863 | 25.3 | 1 |
-| 5x5_hard | solved | 0.800 | 0.735-1.130 | 25.8 | 3 |
-| 6x6_easy | solved | 0.783 | 0.780-0.820 | 35.2 | 2 |
-| 6x6_hard | solved | 1.544 | 1.473-1.918 | 38.9 | 5 |
-| 7x7_easy | solved | 1.535 | 1.384-2.260 | 50.3 | 6 |
-| 7x7_hard | solved | 0.767 | 0.728-1.631 | 49.7 | 3 |
-| 8x8_easy | solved | 5.788 | 5.309-5.890 | 122.7 | 8 |
-| 8x8_hard | solved | 20.084 | 18.640-20.728 | 498.1 | 11 |
-| 9x9_easy | solved | 11.143 | 8.699-12.406 | 262.6 | 7 |
-| 9x9_hard | solved | 6.319 | 6.078-6.706 | 200.8 | 7 |
+## 3. Cắt tỉa
 
-#### BFS / full
+Code hỗ trợ ba mức `none`, `basic`, `full`.
 
-| Input | Trạng thái | Trung vị ms | Min-max ms | Peak Python KiB | max_frontier |
-|---|---|---:|---:|---:|---:|
-| 4x4_easy | solved | 0.170 | 0.169-0.190 | 19.8 | 1 |
-| 4x4_hard | solved | 0.186 | 0.177-0.331 | 19.7 | 1 |
-| 5x5_easy | solved | 0.467 | 0.405-0.810 | 28.9 | 1 |
-| 5x5_hard | solved | 0.783 | 0.762-0.810 | 31.8 | 3 |
-| 6x6_easy | solved | 0.813 | 0.599-0.990 | 39.1 | 2 |
-| 6x6_hard | solved | 2.151 | 2.067-2.277 | 72.9 | 10 |
-| 7x7_easy | solved | 2.104 | 1.952-2.503 | 58.3 | 4 |
-| 7x7_hard | solved | 2.436 | 2.157-2.796 | 72.9 | 4 |
-| 8x8_easy | solved | 5.325 | 5.108-6.231 | 154.8 | 18 |
-| 8x8_hard | solved | 35.169 | 33.355-47.849 | 1033.7 | 201 |
-| 9x9_easy | solved | 15.914 | 14.891-16.387 | 676.2 | 99 |
-| 9x9_hard | solved | 9.986 | 9.854-11.971 | 322.3 | 40 |
+| Mức | Điều kiện loại nhánh | Cơ sở đúng đắn |
+|---|---|---|
+| `none` | Không cắt nhánh theo tổng; kiểm tra đích khi đủ ô. | Dùng làm đối chứng vét cạn trên đề nhỏ. |
+| `basic` | Tổng hàng hoặc cột của ô vừa quyết định vượt gợi ý. | Các trọng số đều dương; quyết định các ô tiếp theo chỉ giữ nguyên hoặc tăng tổng, không thể sửa một tổng đã vượt. |
+| `full` | Phần thiếu của hàng hoặc cột không thuộc tập các tổng tập con tạo được từ những trọng số còn chưa quyết định. | Bất kỳ lời giải tiếp nối nào cũng phải chọn một tập con trong đúng các ô còn lại; nếu không có tập con tạo được phần thiếu thì nhánh không thể có lời giải. |
 
-#### A* / full
+Đối với hàng i, gọi Aᵢ là tập chỉ số cột chưa quyết định và ΔRᵢ là phần
+còn thiếu của tổng hàng. Điều kiện cần để hoàn thành hàng là:
 
-| Input | Trạng thái | Trung vị ms | Min-max ms | Peak Python KiB | max_frontier |
-|---|---|---:|---:|---:|---:|
-| 4x4_easy | solved | 0.209 | 0.203-0.237 | 19.1 | 1 |
-| 4x4_hard | solved | 0.223 | 0.217-0.247 | 19.1 | 1 |
-| 5x5_easy | solved | 0.943 | 0.931-1.038 | 30.2 | 1 |
-| 5x5_hard | solved | 1.121 | 1.107-1.315 | 32.9 | 3 |
-| 6x6_easy | solved | 1.091 | 0.709-1.097 | 40.4 | 2 |
-| 6x6_hard | solved | 2.797 | 1.505-2.898 | 74.7 | 8 |
-| 7x7_easy | solved | 3.463 | 2.766-3.685 | 60.7 | 3 |
-| 7x7_hard | solved | 3.063 | 2.813-3.109 | 82.9 | 4 |
-| 8x8_easy | solved | 8.150 | 7.381-9.349 | 162.2 | 9 |
-| 8x8_hard | solved | 43.728 | 36.854-49.040 | 803.1 | 92 |
-| 9x9_easy | solved | 40.069 | 36.792-40.429 | 651.8 | 62 |
-| 9x9_hard | solved | 12.439 | 12.212-13.166 | 322.0 | 21 |
+```text
+ΔRᵢ ∈ {Σ(j∈U) j : U là tập con của Aᵢ}.
+```
 
-## 5. Phân tích từng input và cơ chế
+Điều kiện tương tự áp dụng cho cột với tập chỉ số hàng chưa quyết định.
+Bảng `subset_tables()` tính trước tập tổng khả đạt và số phần tử ít nhất
+bằng quy hoạch động. Mỗi trọng số chỉ được dùng tối đa một lần.
 
-| Input | Nhận xét dựa trên số node, dưới cùng ngân sách |
+Ví dụ trên đề mẫu, nếu tô đen ô (1,1), hàng 1 mới có 1 điểm và còn thiếu 1.
+Các ô còn lại của hàng có trọng số {2,3,4}; không tập con nào tạo được tổng 1.
+`full` loại ngay nhánh này. `basic` vẫn giữ vì tổng hiện tại 1 chưa vượt 2.
+
+`_ok()` kiểm tra hàng và cột của ô vừa quyết định. Các dòng khác không thay đổi
+tổng hoặc tập ô còn lại ở bước đó, nên không cần kiểm tra lại nếu trạng thái cha
+đã được sinh hợp lệ từ gốc. `full` chỉ kiểm tra điều kiện cần theo từng dòng;
+một trạng thái vượt qua kiểm tra vẫn có thể không có lời giải toàn cục.
+
+## 4. Áp dụng blind search: DFS và BFS
+
+DFS và BFS dùng chung lớp `Kakurasu` qua ba hàm `initial_state()`,
+`successors()` và `is_goal()`. Chúng thuộc nhóm tìm kiếm mù vì thứ tự duyệt
+không dựa trên ước lượng khoảng cách hoặc chi phí đến đích. Các ràng buộc
+trong `successors()` chỉ quyết định nhánh nào còn được xét.
+
+### 4.1. DFS
+
+DFS dùng stack để duyệt sâu theo các quyết định liên tiếp. Vì successor được
+sinh theo thứ tự đen rồi trắng, solver đảo danh sách con trước khi đưa vào
+stack để nhánh tô đen được lấy ra trước. Nếu nhánh không còn successor hoặc
+đến bảng đủ ô nhưng sai tổng, solver tiếp tục lấy một nhánh khác từ stack.
+
+Solver kiểm tra đích khi lấy trạng thái ra khỏi stack và dùng bảng `parent`
+để dựng lại đường lời giải. Do bảng này giữ cả những trạng thái đã thăm,
+bộ nhớ của hiện thực còn phụ thuộc số trạng thái đã lưu, ngoài đường đi hiện tại.
+
+### 4.2. BFS
+
+BFS dùng queue FIFO và duyệt theo số ô đã quyết định: tiền tố độ dài k
+được xử lý trước tiền tố độ dài k + 1. Code kiểm tra đích ngay khi sinh node con
+và dựng lại lời giải từ bảng `parent`.
+
+Trong mô hình này, mọi đích đều ở độ sâu n·m. Vì vậy lời giải mà BFS tìm được
+không có ít hành động hơn lời giải DFS. Chi phí cạnh lại là 0 hoặc 1, nên BFS
+cũng không bảo đảm lời giải ít ô đen nhất. Về cách lưu trạng thái, BFS giữ các
+tiền tố đang chờ xét theo tầng, còn DFS ưu tiên đi sâu theo thứ tự successor.
+
+Ví dụ chạy hai thuật toán trên cùng đề:
+
+```python
+from core import Limits, dfs, bfs
+from puzzles.kakurasu import Kakurasu, verify
+
+for solve in (dfs, bfs):
+    p = Kakurasu.from_file("data/kakurasu_4x4_easy.json", prune="full")
+    result = solve(p, limits=Limits(time_limit=30, max_nodes=50000))
+    if result.found:
+        assert verify(p.to_grid(result.final_state), p.row_clues, p.col_clues)
+```
+
+## 5. Heuristic cho A*
+
+### 5.1. Công thức
+
+Đặt M(A, Δ) là số phần tử ít nhất của một tập con U ⊆ A có tổng bằng Δ.
+Nếu không có tập con phù hợp, đặt M(A, Δ) = ∞. Trong đó A là tập trọng số
+còn chưa quyết định; Δ là gợi ý trừ tổng hiện tại.
+
+```text
+h_row(s) = Σ(i=1..n) M(Aᵢ, ΔRᵢ).
+h_col(s) = Σ(j=1..m) M(Bⱼ, ΔCⱼ).
+h(s)     = max(h_row(s), h_col(s)).
+f(s)     = g(s) + h(s).
+```
+
+Bⱼ là tập chỉ số hàng chưa quyết định trong cột j. Các giá trị M được lấy
+từ bảng số phần tử ít nhất của `subset_tables()`. Heuristic ước lượng số ô
+đen còn cần, cùng đơn vị với chi phí g. Code A* ưu tiên f nhỏ nhất; nếu hòa f
+thì ưu tiên h nhỏ hơn, rồi thứ tự sinh node.
+
+### 5.2. Ví dụ tính tay trên một trạng thái
+
+Xét đề mẫu ở trạng thái `s = (0,1,0,0)`: hàng 1 đã hoàn tất, ba hàng còn lại
+chưa quyết định. Vì chỉ có một ô đen đã tô nên g(s) = 1.
+
+| Hàng | Phần thiếu | Trọng số còn được chọn | Số ô ít nhất và một cách đạt |
+|---|---:|---|---|
+| 1 | 0 | Không còn ô | 0 |
+| 2 | 4 | {1,2,3,4} | 1: chọn 4 |
+| 3 | 4 | {1,2,3,4} | 1: chọn 4 |
+| 4 | 5 | {1,2,3,4} | 2: chọn 1 + 4 |
+
+Suy ra h_row(s) = 0 + 1 + 1 + 2 = 4. Các cách chọn trong bảng là nghiệm của
+từng hàng riêng lẻ, chưa bắt buộc đồng thời khớp các cột.
+
+Tổng cột hiện tại là [0,1,0,0], nên phần thiếu của bốn cột là [3,4,7,2].
+Mỗi cột còn các ô ở hàng {2,3,4}:
+
+| Cột | Phần thiếu | Số ô ít nhất và một cách đạt |
+|---|---:|---|
+| 1 | 3 | 1: chọn hàng 3 |
+| 2 | 4 | 1: chọn hàng 4 |
+| 3 | 7 | 2: chọn hàng 3 và 4 |
+| 4 | 2 | 1: chọn hàng 2 |
+
+Do đó h_col(s) = 1 + 1 + 2 + 1 = 5, h(s) = max(4,5) = 5 và
+f(s) = 1 + 5 = 6. Lời giải ở Hình 1 còn cần 5 ô đen sau trạng thái
+này. Ở trạng thái đầu, h_row = 5, h_col = 6 nên h = 6; ở đích hợp lệ, h = 0.
+
+### 5.3. Chứng minh admissible
+
+Gọi h*(s) là số ô đen bổ sung ít nhất của một lời giải hoàn chỉnh tiếp nối s.
+Với bất kỳ lời giải tiếp nối nào, số ô đen bổ sung trên hàng i không thể nhỏ hơn
+M(Aᵢ, ΔRᵢ). Vì mỗi ô đen thuộc đúng một hàng, cộng theo hàng cho h_row(s) ≤ h*(s).
+Lập luận theo cột tương tự cho h_col(s) ≤ h*(s). Vì vậy:
+
+```text
+h(s) = max(h_row(s), h_col(s)) ≤ h*(s).
+```
+
+Như vậy, h không đánh giá quá cao chi phí tối ưu còn lại, thỏa tính admissible.
+Phép cộng h_row + h_col có thể đếm cùng ô đen hai lần vì ô đó đóng góp cho cả
+hàng và cột. Lấy giá trị lớn hơn của hai cận tránh được việc này. Nếu một dòng
+không thể hoàn thành thì trạng thái không có lời giải, ứng với h = h* = ∞.
+
+Heuristic còn nhất quán: với quyết định giá trị v, một phương án hoàn thành
+trạng thái con kết hợp với ô vừa quyết định là phương án cho bài toán nới lỏng
+của trạng thái cha. Do đó h_row(s) ≤ v + h_row(s′), tương tự cho cột; lấy max
+cho h(s) ≤ c(s,s′) + h(s′). Tại đích hợp lệ, h = 0.
+
+Cây trạng thái hữu hạn, chi phí cạnh không âm và cắt tỉa giữ các đường dẫn đến
+lời giải. Với heuristic trên, A* trả lời giải tối ưu theo số ô đen khi chạy đến
+đích. Nếu dừng vì giới hạn node hoặc thời gian, kết quả chỉ cho biết solver
+chưa tìm được lời giải trong ngân sách đã đặt.
+
+Trong hiện thực hiện tại, node có h = ∞ vẫn được đưa vào heap và nằm sau các
+node có f hữu hạn. Chúng vẫn có thể được mở rộng khi các node hữu hạn đã hết,
+chẳng hạn trên một đề vô nghiệm.
+
+## 6. Kiểm thử và kết quả chạy
+
+File [test_kakurasu.py](../tests/test_kakurasu.py) có 18 test. Các trường hợp
+kiểm tra gồm dữ liệu đầu vào, mô hình, cắt tỉa, heuristic, solver và trace.
+
+| Phần kiểm tra | Các trường hợp đã xét |
 |---|---|
-| 4x4 easy | basic: A* 16 node so với DFS 483 và BFS 638. full: cả ba còn 16; ưu thế số node của A* biến mất khi ràng buộc đã ép đường đi. |
-| 4x4 hard | basic: DFS 243, BFS 796, A* 16. DFS duyệt ít hơn trên đề easy dù tên là hard; nhãn trang nguồn không đo trực tiếp độ khó của thuật toán này. |
-| 5x5 easy | DFS/BFS basic cùng dừng ở 50.000 node; A* basic 25. full đưa cả ba về 25, cho thấy kiểm tra phần thiếu khả đạt loại được nhiều nhánh hơn kiểm tra vượt tổng. |
-| 5x5 hard | DFS basic giải ở 37.182 node, BFS basic bị giới hạn, A* basic 36. full: DFS 25, BFS/A* 36. Không thể khẳng định A* luôn mở ít node nhất. |
-| 6x6 easy | basic: DFS 276, BFS 5.679, A* 37; full: 36/37/37. Thứ tự duyệt DFS có lợi trên input này; full khiến phần lớn chi phí node không còn khác biệt. |
-| 6x6 hard | DFS/BFS basic bị giới hạn, A* 91. full: DFS 43, BFS 125, A* 91. Cắt tỉa giúp các thuật toán mù giải trong ngân sách. |
-| 7x7 easy | DFS/BFS basic bị giới hạn, A* 64. full: 50/64/64, DFS đi ít nhánh sai hơn trong lần tìm lời giải đầu tiên này. |
-| 7x7 hard | DFS/BFS basic bị giới hạn, A* 88. full: 49/91/88; A* giảm một phần node so BFS nhưng không so DFS. |
-| 8x8 easy | DFS/BFS basic bị giới hạn, A* 221. full: 199/243/221; khác biệt nhỏ hơn nhiều so basic, cần xem chi phí xử lý mỗi node trong bảng thời gian. |
-| 8x8 hard | DFS/BFS basic bị giới hạn, A* 1.305. full: 1.120/2.127/1.305. Đây là input mở nhiều node nhất trong các lượt full của từng thuật toán ở bộ đo này. |
-| 9x9 easy | DFS/BFS basic bị giới hạn, A* 1.082. full: 480/1.327/1.082. Dù nhiều ô hơn 8x8 hard, cả ba full đều mở ít node hơn: kích thước không đủ để dự báo độ khó. |
-| 9x9 hard | DFS/BFS basic bị giới hạn, A* 368. full: 308/487/368, đều ít hơn 9x9 easy; một đề mỗi nhãn/kích thước không đủ phân tích tác động độc lập của nhãn độ khó. |
+| Dữ liệu và bảng tổng tập con | Đủ 12 input; tập tổng khả đạt và số ô ít nhất khớp với ví dụ tính tay. |
+| Hàm `verify()` | Nhận lời giải đúng; loại lưới sai tổng, sai kích thước, hàng không đều và ô không phải số nguyên 0/1. |
+| Sinh trạng thái và xuất view | Đúng thứ tự successor và định dạng action/state/cost; phân biệt ô trắng với ô chưa quyết định. |
+| Cắt tỉa | `full` loại nhánh bất khả thi sớm hơn `basic`; cả hai giữ đường dẫn tới lời giải mẫu. |
+| Heuristic | Kiểm tra giá trị trên đường lời giải và trạng thái chết; dùng oracle vét cạn trên lưới 2×2, 2×3 để đối chiếu cận dưới, tính nhất quán và việc giữ nghiệm. |
+| Tính duy nhất của đề mẫu | Vét cạn 2^16 bảng 4×4 và chỉ tìm được lời giải ở Hình 1. |
+| Ghép solver | DFS, BFS và A* giải cả 12 đề với `full`; A* giải cả 12 đề với `basic`. |
+| Trace | So sánh hai trace lưu sẵn với trace sinh lại; kiểm tra trạng thái đích và trường hợp A* mở node h = ∞ trên đề vô nghiệm. |
 
-Trong tập đo này, A* basic tìm được lời giải trong ngân sách node ở cả 12 đề, trong khi DFS/BFS basic
-chỉ đạt 4 và 3 đề. Cơ chế phù hợp với kết quả là ưu tiên đường có cận tổng chi phí thấp;
-đây không phải bằng chứng rằng mọi Kakurasu lớn đều giải nhanh. Ngân sách node chỉ cho
-cận dưới về công việc còn thiếu của các lượt bị giới hạn, không cho tỷ lệ tăng tốc chính
-xác trên các lượt đó.
+Lượt chạy ngày 30/10/2026 trên nhánh `tv3-kakurasu`, commit `d7be4d8`, đạt
+18/18 test TV3. Lệnh chạy từ thư mục gốc repo:
 
-Khi chuyển basic sang full, DFS giảm mạnh số node trên nhiều input và giải được toàn bộ
-12 đề. A* mở cùng số node giữa hai mức trên bộ dữ liệu này, nhưng full có thể loại bớt
-nhánh h=inf trước khi đưa vào heap, ảnh hưởng số node sinh/frontier/peak. Không được suy
-ra cắt tỉa vô ích đối với A* chỉ từ nodes_expanded bằng nhau. Thời gian còn phụ thuộc chi
-phí kiểm tra, tính heuristic, thao tác heap và cấu trúc lưu trữ; ít node hơn không đồng
-nghĩa nhanh hơn theo đúng cùng một tỷ lệ.
+```sh
+python -B -m unittest discover -s tests -p test_kakurasu.py -v
+```
 
-DFS giữ frontier theo chiều sâu nhưng hiện thực còn lưu parent của mọi trạng thái đã
-thăm; do đó không áp dụng máy móc cận bộ nhớ O(depth) của DFS dạng đệ quy chỉ lưu đường.
-BFS giữ nhiều trạng thái cùng lớp; A* giữ heap và các bảng g/depth/parent/closed. Peak
-tracemalloc ở bảng là số đo cho hiện thực này, không chỉ là phân tích độ phức tạp lý thuyết.
+Bộ test toàn repo ngày 24/10/2026 đạt 33/33, có log lưu trong
+`docs/experiments/tv3-2026-10-24/tests.log`. Đây là kết quả của phiên bản lúc đó;
+lượt ngày 30/10 chỉ chạy lại phần Kakurasu. Các test nhỏ giúp phát hiện sai sót
+hiện thực, còn tính admissible được lập luận ở mục 5.3.
 
-Các kết quả basic/full dùng cùng input và cấu hình để so cơ chế cụ thể. Chưa có thử nghiệm
-đối chứng thứ tự successor hay heuristic bằng 0; không tách hoàn toàn hiệu quả của cận
-heuristic khỏi quy tắc phá hòa của A* (`f`, rồi `h`, rồi thứ tự sinh). Không suy diễn nhân
-quả riêng cho một thành phần chưa được tách thử nghiệm.
+## 7. Trace mẫu
 
-## 6. Kiểm thử và trace bàn giao
+Hai file trace thật dùng đề 4×4 ở Hình 1 với `prune="basic"`:
 
-Toàn bộ 33 test core + Kakurasu đã đạt, gồm 5 test bổ sung trong lượt hoàn thiện này:
+- [Trace DFS](../traces/example_kakurasu_4x4_dfs.json).
+- [Trace A*](../traces/example_kakurasu_4x4_astar.json).
 
-1. Lời giải phải chứa đúng số nguyên 0/1; loại 2, -1, chuỗi, float, bool và None dù gợi ý khớp.
-2. Loại lưới sai kích thước hoặc hàng không đều.
-3. Oracle độc lập vét cạn mọi lưới 2x2 và 2x3, nhóm theo gợi ý, kiểm tra mọi tiền tố:
-   h không vượt số ô đen tối ưu còn lại khi có lời giải; bất đẳng thức nhất quán trên mọi
-   cạnh; full không cắt đường dẫn tới lời giải. Đây là kiểm tra hữu hạn, không thay chứng minh.
-4. Đề vô nghiệm 1x1 xác nhận A* có thể mở trạng thái h=inf.
-5. Tái lập cả hai trace JSON theo cấu hình basic, so initial/steps/solution/truncated
-   sau chuẩn hóa tuple sang JSON list; không so elapsed vì không bất biến.
+Trong các bảng dưới đây, `s` là tiền tố đã quyết định và `i` là chỉ số sự kiện
+trong JSON, bắt đầu từ 0. Cột độ sâu cho biết số ô đã quyết định. Sự kiện
+`expand` ghi lại trạng thái được lấy ra để xét; `goal` ghi nhận việc tìm thấy đích.
 
-Trace bàn giao TV4 (định dạng v1, không thay đổi file gốc):
+<!-- TRACE_TABLES -->
 
-| File | Input / cắt tỉa | Sự kiện | Node mở rộng | Trạng thái đường lời giải |
-|---|---|---:|---:|---:|
-| [DFS](../traces/example_kakurasu_4x4_dfs.json) | 4x4 easy / basic | 485 | 483 | 17 |
-| [A*](../traces/example_kakurasu_4x4_astar.json) | 4x4 easy / basic | 18 | 16 | 17 |
+### 7.1. Trích trace DFS
 
-Mỗi view có rows/cols/grid; ô chưa quyết định là null, trắng 0, đen 1.
-Đường lời giải 17 trạng thái gồm trạng thái đầu và 16 quyết định. Trace DFS có các nhánh
-khác nhau để minh họa tìm kiếm, không phải chỉ 17 trạng thái cuối được lặp lại.
-GUI trực quan và video của nhóm vẫn thuộc TV4; sự tồn tại của trace không xác nhận GUI
-đã chạy được. Log kiểm thử và hash file nằm cùng thư mục bằng chứng.
+| i | Sự kiện | Tiền tố s | Độ sâu | g |
+|---:|---|---|---:|---:|
+| 0 | expand | `()` | 0 | 0 |
+| 1 | expand | `(1,)` | 1 | 1 |
+| 2 | expand | `(1,0)` | 2 | 1 |
+| 3 | expand | `(1,0,0)` | 3 | 1 |
+| 4 | expand | `(1,0,0,0)` | 4 | 1 |
+| 483 | expand | `s_đích` | 16 | 6 |
+| 484 | goal | `s_đích` | 16 | 6 |
 
-## 7. Kết luận đúng phạm vi và bàn giao
+### 7.2. Trích trace A*
 
-TV3 đã có mô hình Kakurasu, heuristic có lập luận cận dưới/nhất quán, tích hợp solver
-của TV1, 12 input, test, hai trace tái lập, số liệu thời gian/bộ nhớ từng cấu hình và
-phần phân tích để ghép báo cáo. Thực nghiệm này đạt yêu cầu cung cấp số liệu của phần
-Kakurasu; không đại diện cho toàn bộ bài nộp nhóm.
+| i | Sự kiện | Tiền tố s | Độ sâu | g | h | f |
+|---:|---|---|---:|---:|---:|---:|
+| 0 | expand | `()` | 0 | 0 | 6 | 6 |
+| 1 | expand | `(0,)` | 1 | 0 | 6 | 6 |
+| 2 | expand | `(0,1)` | 2 | 1 | 5 | 6 |
+| 3 | expand | `(0,1,0)` | 3 | 1 | 5 | 6 |
+| 4 | expand | `(0,1,0,0)` | 4 | 1 | 5 | 6 |
+| 16 | expand | `s_đích` | 16 | 6 | 0 | 6 |
+| 17 | goal | `s_đích` | 16 | 6 | — | — |
 
-- TV1: ghép phần này với Pipes và lý thuyết chung, kiểm tra cách định nghĩa cost và
-  giới hạn, biên tập báo cáo cuối; không gộp bảng sơ bộ khác ngân sách như cùng một thí nghiệm.
-- TV4: nạp hai trace thật, kiểm tra hiển thị từng ô và các bước tìm kiếm, ghép demo/slides/video.
-- TV5: dùng raw.csv/summary.csv/metadata.json cho benchmark và biểu đồ chung hai bài;
-  nếu đo lại bằng core.metrics phải ghi rõ core.metrics đo chỉ phần tìm kiếm với mô hình
-  có sẵn, còn bộ đo TV3 này gồm tạo mô hình; không so thời gian từ hai phương pháp như cùng điều kiện.
-  File ZIP cuối và kiểm thử tổng hợp toàn nhóm vẫn cần hoàn tất theo phần việc của TV5.
+Dấu —: sự kiện `goal` trong JSON không lưu lại h/f; không phải giá trị 0.
 
-Giới hạn còn lại của bằng chứng TV3: tập mẫu nhỏ, không ngẫu nhiên, chưa xác nhận mọi đề
-có lời giải duy nhất, không đo RSS, chưa chạy trên máy độc lập, không có kiểm định thống
-kê hay ablation heuristic/phá hòa; các lượt bị giới hạn không chứng minh vô nghiệm.
+<!-- END_TRACE_TABLES -->
+
+DFS bắt đầu bằng nhánh `(1,)` do ưu tiên tô đen. Nhánh này vẫn qua cắt tỉa
+`basic`, dù không thể hoàn thành hàng 1. Solver phải thử các nhánh khác trước
+khi tìm thấy đích. A* không chọn mở rộng nhánh `(1,)` trước vì heuristic của
+nhánh đó là ∞; trên trace mẫu, nó chọn `(0,)` rồi `(0,1)`.
+
+Cả hai kết thúc ở tuple:
+
+```text
+(0,1,0,0, 0,0,0,1, 1,0,1,0, 0,1,1,0)
+```
+
+Tuple có 16 ô, trong đó có 6 ô đen, nên chi phí g = 6. Mảng `solution` có
+17 trạng thái, gồm trạng thái đầu và 16 quyết định. Trace DFS còn chứa các
+trạng thái đã xét ở những nhánh khác. Vì vậy khi phát lại, GUI vẽ bảng theo
+toàn bộ `state` của từng sự kiện thay vì xem mọi sự kiện liên tiếp là một nước
+đi trên đường lời giải. Các trường `rows`, `cols`, `grid` mô tả gợi ý và lưới;
+giá trị `null` biểu thị ô chưa quyết định.
+
+DFS/A* ghi sự kiện `expand` trước khi kiểm tra đích, nhưng chỉ tăng
+`nodes_expanded` nếu còn cần mở rộng trạng thái đó. Do đó chỉ số sự kiện trace
+và bộ đếm node có cách tính khác nhau.
+
+## 8. Nhận xét riêng của Kakurasu
+
+Với biểu diễn tiền tố, mỗi bước quyết định một ô và có thể ghi lại trực tiếp
+để phát trên GUI. Cùng một mô hình được dùng cho cả DFS, BFS và A*. Hạn chế
+của cách biểu diễn này là mọi lời giải đều ở độ sâu n·m, còn số cách điền bảng
+trước cắt tỉa tăng theo hàm mũ.
+
+Ràng buộc tổng có trọng số cho phép phát hiện bất khả thi trước khi điền đầy
+bảng. `full` mạnh hơn kiểm tra vượt tổng vì nhận ra những phần thiếu không thể
+tạo từ các ô còn lại. Việc kiểm tra riêng hàng/cột vẫn chưa giải quyết toàn bộ
+sự phụ thuộc giữa chúng, nên tìm kiếm còn cần thiết.
+
+Heuristic `max(h_row,h_col)` kết hợp hai cận dưới từ hàng và cột. Khi cắt tỉa
+đã loại được nhiều nhánh, lợi ích của việc xếp thứ tự theo heuristic có thể
+giảm, trong khi chi phí tính h vẫn còn. So sánh A* với DFS/BFS vì thế cần đặt
+trên cùng input và cùng mức cắt tỉa. Các kết quả đo được trình bày ở chương 5.
+
+Đề mẫu đã được vét cạn để kiểm tra tính duy nhất. Với các đề lớn hơn, các lượt
+chạy hiện tại xác nhận lời giải tìm được thỏa luật, chưa xác nhận mọi đề đều
+chỉ có một lời giải. Nhãn easy/hard của nguồn dữ liệu cũng chưa đủ để dự đoán
+đề nào khó hơn đối với từng thuật toán.
+
+Nguồn số liệu cho chương 5 gồm
+[raw.csv](experiments/tv3-2026-10-24/raw.csv),
+[summary.csv](experiments/tv3-2026-10-24/summary.csv) và
+[metadata.json](experiments/tv3-2026-10-24/metadata.json). Cách đo, bảng kết quả
+và phân tích được lưu riêng trong
+[số liệu thực nghiệm Kakurasu](so_lieu_kakurasu_chuong_5.md). Khi tổng hợp với
+Pipes, cần thống nhất phần công việc được tính vào thời gian đo: bộ đo Kakurasu
+này tính cả đọc input, tạo mô hình và tìm kiếm.
