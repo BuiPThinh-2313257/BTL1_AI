@@ -13,3 +13,6 @@ Thumbs.db
 
 # Kết quả benchmark chạy lại được
 results/
+
+# Ghi chú cá nhân giải thích từng dòng (không nộp)
+docs/*_tung_dong.md

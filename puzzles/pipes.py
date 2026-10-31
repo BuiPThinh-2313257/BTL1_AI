@@ -14,7 +14,9 @@ class Pipes(Problem):
     def __init__(self, grid_data):
         self.rows = grid_data['grid_size']['rows']
         self.cols = grid_data['grid_size']['cols']
-        self.grid = grid_data['grid']
+        # Trải lưới 2 chiều thành danh sách 1 chiều theo thứ tự hàng (ô idx = r*cols + c)
+        self.grid = [grid_data['grid'][r][c]
+                     for r in range(self.rows) for c in range(self.cols)]
 
     @classmethod
     def from_file(cls, filepath):
