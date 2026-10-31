@@ -1,121 +1,226 @@
 
-# TV5 – Báo cáo kiểm thử tích hợp (Giai đoạn 2)
+# TV5 — TỔNG KẾT KIỂM THỬ TÍCH HỢP
+## Giai đoạn 2 — Bài tập lớn Nhập môn AI
 
-## 1. Phạm vi
+**Bài toán:** Pipes và Kakurasu  
+**Thành viên:** TV5 — Dữ liệu và Benchmark
 
-- Bài toán: **Pipes** và **Kakurasu**.
-- Giải thuật kiểm thử:
-  - Pipes: DFS và Hill Climbing.
-  - Kakurasu: DFS và A*.
-- TV5 kiểm tra độc lập bằng `verify.py` và đo thử bằng `benchmark.py`.
-- Không sửa thuật toán của TV1, TV2 và TV3.
-- Tài liệu cập nhật theo bản source có phần sửa Pipes của TV2, ngày 31/10/2026.
+---
 
-## 2. Lệnh và phương pháp kiểm thử
+## 1. Mục tiêu
 
-Chạy tại thư mục gốc `BTL1_AI`:
+Giai đoạn 2 tập trung kiểm thử tích hợp các thành phần tìm kiếm, mô hình bài toán và bộ dữ liệu.
+
+TV5 thực hiện:
+
+- Kiểm tra cấu trúc các input JSON.
+- Kiểm tra lời giải độc lập bằng `verify.py`.
+- Chạy thử các thuật toán đã được nhóm triển khai.
+- Đo thử thời gian, bộ nhớ và số node.
+- Phát hiện, ghi nhận và báo lỗi tích hợp.
+- Chuẩn bị công cụ benchmark cho Giai đoạn 3.
+
+TV5 không tự ý sửa thuật toán hoặc heuristic của TV1, TV2 và TV3.
+
+## 2. Phạm vi kiểm thử
+
+| Puzzle | Thuật toán |
+|---|---|
+| Kakurasu | DFS, A* |
+| Pipes | DFS, Hill Climbing |
+
+Các file TV5 sử dụng:
+
+- `verify.py`
+- `benchmark.py`
+- `tests/test_verify.py`
+- `tests/test_benchmark.py`
+- `core/metrics.py`
+- `core/search.py`
+
+## 3. Phương pháp kiểm thử
+
+Các chương trình được chạy bằng Python 3 tại thư mục gốc của repository.
+
+Lệnh kiểm tra JSON:
 
 ```powershell
 py verify.py
-
-py -m unittest discover -s tests -p "test_*.py" -v
-
-py benchmark.py --puzzle kakurasu --inputs kakurasu_4x4_easy.json --repeats 1 --max-nodes 50000 --time-limit 5 --strict --output results/tv5-gd2-kakurasu
-
-py benchmark.py --puzzle pipes --inputs input_pipes_4x4.json --repeats 1 --max-nodes 50000 --time-limit 5 --strict --output results/tv5-gd2-pipes
 ```
 
-Nếu thư mục kết quả đã tồn tại, đổi tên `--output` trước khi chạy lại.
+Lệnh unit test:
 
-### Phương pháp đo
+```powershell
+py -m unittest discover -s tests -p "test_*.py" -v
+```
 
-- Thời gian: `core.metrics.measure()` sử dụng `time.perf_counter()`.
-- Bộ nhớ: `tracemalloc` đo bộ nhớ Python được cấp phát ở một lượt chạy riêng.
-- Không bật trace GUI khi benchmark.
-- Chỉ công nhận giải thành công khi `status=solved` và `verified=True`.
-- Các trạng thái `node_limit`, `time_limit` và `stuck` không được coi là vô nghiệm.
+Lệnh kiểm thử Kakurasu:
 
-## 3. Kết quả kiểm thử
+```powershell
+py benchmark.py --puzzle kakurasu --inputs kakurasu_4x4_easy.json --repeats 1 --max-nodes 50000 --time-limit 5 --strict --output results/tv5-gd2-kakurasu-recheck
+```
 
-Kết quả trên source ngày 31/10/2026:
+Lệnh kiểm thử Pipes:
 
-- 13/13 file JSON hợp lệ về cấu trúc.
-- 59/59 unit test đạt sau khi bổ sung 3 bài kiểm thử hồi quy.
-- Các bài toán được chạy với `max_nodes=50000` và `time_limit=5`.
-- Kakurasu sử dụng `prune=basic`.
-- Hill Climbing sử dụng `seed=0`.
+```powershell
+py benchmark.py --puzzle pipes --inputs input_pipes_4x4.json --repeats 1 --max-nodes 50000 --time-limit 5 --strict --output results/tv5-gd2-pipes-recheck
+```
 
-| Input | Giải thuật | Status | Verified | Expanded nodes |
+Nếu thư mục kết quả đã tồn tại, cần thay tên `--output`.
+
+Lời giải chỉ được công nhận khi:
+
+`status=solved` và `verified=True`.
+
+Các trường hợp chạm giới hạn node hoặc thời gian không được xem là lời giải thành công, nhưng cũng không chứng minh bài toán vô nghiệm.
+
+## 4. Kết quả kiểm thử
+
+### 4.1. Kiểm tra dữ liệu
+
+Có 13/13 file JSON hợp lệ về cấu trúc:
+
+- 12 file Kakurasu.
+- 1 file Pipes 4×4.
+
+Kết quả này chưa có nghĩa tất cả input đều được chứng minh có lời giải.
+
+### 4.2. Unit test
+
+Bộ source sau cập nhật có:
+
+**59/59 unit test đạt.**
+
+Các bài test bao gồm thuật toán, mô hình puzzle, GUI, xác thực lời giải và benchmark.
+
+### 4.3. Kiểm thử solver
+
+Cấu hình: `max_nodes=50000`, `time_limit=5`, Kakurasu dùng `prune=basic`, Hill Climbing dùng seed 0.
+
+| Input | Thuật toán | Status | Verified | Expanded nodes |
 |---|---|---|---|---:|
-| kakurasu_4x4_easy.json | DFS | solved | True | 483 |
-| kakurasu_4x4_easy.json | A* | solved | True | 16 |
-| input_pipes_4x4.json | DFS | solved | True | 16 |
-| input_pipes_4x4.json | Hill Climbing | solved | True | 21 |
+| Kakurasu 4×4 Easy | DFS | solved | True | 483 |
+| Kakurasu 4×4 Easy | A* | solved | True | 16 |
+| Pipes 4×4 | DFS | solved | True | 16 |
+| Pipes 4×4 | Hill Climbing | solved | True | 21 |
 
-Bảng trên là kết quả kiểm thử tích hợp, chưa phải kết quả benchmark cuối cùng. Thời gian và bộ nhớ phải lấy từ CSV thực nghiệm trên máy được sử dụng để lập báo cáo.
+Bảng trên chỉ là kiểm thử tích hợp trên các input đại diện.
 
-## 4. Tình trạng lỗi Pipes
+Số liệu benchmark đầy đủ được trình bày riêng tại báo cáo Giai đoạn 3.
 
-### Trước khi TV2 sửa
+## 5. Lịch sử và xử lý lỗi Pipes
 
-- Solver có thể trả về `solved` nhưng `verify.py` trả về `False`.
-- Điều kiện Goal chưa loại trừ đúng mạng có vòng kín.
-- Bộ dữ liệu Pipes cũ không phù hợp với yêu cầu mạng không chu trình.
+### 5.1. Lỗi trước khi TV2 sửa
 
-### Sau khi TV2 sửa
+Trong phiên bản cũ:
 
-- Đã cập nhật `puzzles/pipes.py`.
-- Đã cập nhật `data/input_pipes_4x4.json`.
-- DFS giải thành công và `verified=True`.
-- Hill Climbing với seed 0 giải thành công và `verified=True`.
-- Không còn tái hiện lỗi cũ trên input Pipes 4x4 đã kiểm tra.
+- `Pipes.is_goal()` chưa loại trừ đúng các vòng kín.
+- `local_cost()` chưa đánh giá đầy đủ điều kiện cấm chu trình.
+- Input Pipes cũ không phù hợp với mạng liên thông không chu trình.
+- DFS và Hill Climbing có thể báo `solved`, nhưng TV5 xác thực `False`.
 
-### Lưu ý kỹ thuật còn lại
+TV5 đã phát hiện lỗi qua `verify.py` và ghi nhận vào `integration_issues.csv`.
 
-`is_goal()` hiện dùng điều kiện:
+### 5.2. Sau khi sửa
 
-`total_ends // 2 == V - 1`
+TV2 đã cập nhật:
 
-Với input có tổng đầu nối lẻ, phép chia lấy phần nguyên có thể cho kết quả đúng dù vẫn còn đầu ống thừa.
+- `puzzles/pipes.py`
+- `data/input_pipes_4x4.json`
+- Các bài test liên quan.
 
-Nên thay bằng:
+Input mới gồm:
 
-`total_ends == 2 * (V - 1)`
+- 2 ô Dead-end.
+- 8 ô I-shape.
+- 6 ô L-shape.
 
-Đồng thời, khi hỗ trợ dữ liệu khác, cần kiểm tra các đầu nối khớp nhau và không hướng ra biên.
+Tổng số đầu nối bằng 30, phù hợp điều kiện cần của mạng cây gồm 16 đỉnh.
 
-`verify_pipes()` của TV5 đã từ chối các lời giải có đầu nối không hợp lệ.
+Sau khi cập nhật:
 
-Chưa kết luận solver đúng với mọi input và mọi seed.
+- DFS giải đúng input 4×4.
+- Hill Climbing seed 0 giải đúng input 4×4.
+- `verify_pipes()` xác nhận `True`.
 
-## 5. Công việc cần thực hiện ở Giai đoạn 3
+Benchmark ba lượt cho mỗi thuật toán cũng ghi nhận 6/6 lượt hợp lệ.
 
-1. Thống nhất cấu hình benchmark chính thức với TV1.
-2. Chạy benchmark toàn bộ bộ dữ liệu Kakurasu.
-3. Chạy benchmark các input Pipes hợp lệ.
-4. Đánh giá Hill Climbing với nhiều seed khác nhau.
-5. Xuất CSV thô, CSV tổng hợp và metadata.
-6. Tạo bảng và biểu đồ so sánh thời gian, bộ nhớ và số node.
-7. Phân biệt kết quả giải thành công với các trường hợp chạm giới hạn.
-8. Bàn giao kết quả cho TV1 và TV4.
+Ngoài ra, năm seed Hill Climbing từ 0 đến 4 đều trả lời giải hợp lệ trên input này.
 
-Lưu ý: `median_time_valid_s` chỉ tính lượt giải đúng, trong khi `median_peak_kb_all` tính trên mọi lượt. Không coi hai chỉ số này được tính trên cùng một tập lượt chạy.
+### 5.3. Lưu ý kỹ thuật còn lại
 
-## 6. Các file TV5 bàn giao
+Trong `Pipes.is_goal()` hiện có:
 
-### Giai đoạn 1
+```python
+if total_ends // 2 != len(self.grid) - 1:
+    return False
+```
 
-- `verify.py`
-- `tests/test_verify.py`
+Điều kiện này nên được thay bằng:
 
-### Giai đoạn 2
+```python
+if total_ends != 2 * (len(self.grid) - 1):
+    return False
+```
 
-- `benchmark.py`
-- `tests/test_benchmark.py`
-- `docs/tv5_gd2_kiem_thu.md`
+Lý do là phép chia nguyên có thể bỏ sót trường hợp tổng đầu nối lẻ.
 
-### Kết quả thực nghiệm
+Ngoài ra, nếu hàm Goal được gọi trực tiếp trên một trạng thái bất kỳ, cần xác minh các đầu nối không vượt biên, khớp nhau và toàn mạng liên thông.
 
-Các file CSV và metadata được tạo trong `results/`.
+`verify_pipes()` của TV5 đã kiểm tra những điều kiện đó.
 
-Thư mục `results/` hiện bị `.gitignore` bỏ qua. Nếu muốn lưu kết quả chính thức lên GitHub, có thể sao chép chúng vào `docs/experiments/tv5/` sau khi thống nhất với nhóm.
+Phần sửa solver thuộc trách nhiệm TV2. Các kết quả Pipes 4×4 hiện tại đã vượt qua bước xác thực độc lập.
+
+## 6. Công cụ benchmark của TV5
+
+`benchmark.py` có các chức năng:
+
+- Đọc file input JSON.
+- Chọn puzzle và thuật toán tương ứng.
+- Chạy thuật toán theo giới hạn.
+- Đo execution time.
+- Đo peak memory bằng `tracemalloc`.
+- Đo expanded nodes.
+- Xác thực lời giải.
+- Ghi nhận lỗi.
+- Xuất CSV và metadata.
+
+Các file kết quả:
+
+- `benchmark_raw.csv`
+- `benchmark_summary.csv`
+- `integration_issues.csv`
+- `metadata.json`
+
+Thời gian và bộ nhớ được đo qua hai lượt chạy riêng. Bộ nhớ được báo cáo là mức cấp phát Python theo `tracemalloc`, không phải RSS.
+
+## 7. Đánh giá Giai đoạn 2
+
+Các công việc đã hoàn thành:
+
+- Kiểm tra dữ liệu JSON.
+- Xây dựng verifier.
+- Viết unit test.
+- Kiểm thử thuật toán trên input đại diện.
+- Phát hiện và ghi nhận lỗi Pipes.
+- Kiểm tra lại sau khi TV2 sửa.
+- Hoàn thiện công cụ benchmark.
+- Chuẩn bị dữ liệu cho Giai đoạn 3.
+
+Hạn chế:
+
+- Chưa thể khẳng định solver đúng với mọi input và mọi seed.
+- Pipes hiện chỉ có một input.
+- Cần đánh giá benchmark đầy đủ hơn trong Giai đoạn 3.
+
+## 8. Công việc chuyển tiếp Giai đoạn 3
+
+- Chạy benchmark trên toàn bộ input Kakurasu.
+- Chạy Pipes với nhiều lượt và nhiều seed.
+- Tổng hợp CSV.
+- Tạo bảng và biểu đồ.
+- Phân tích chênh lệch thời gian, bộ nhớ và số node.
+- Bàn giao kết quả cho TV1 và TV4.
+- Hỗ trợ đóng gói ZIP cuối.
+
+**Kết luận:** Các thành phần tích hợp đã hoạt động trên những trường hợp được kiểm tra. TV5 đã phát hiện được lỗi Pipes của phiên bản trước và xác nhận bản sửa trên input 4×4. Phần đánh giá thực nghiệm tổng thể được tiếp tục ở Giai đoạn 3.

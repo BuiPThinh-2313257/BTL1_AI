@@ -1,0 +1,3 @@
+﻿puzzle,input,algorithm,run,status,found,verified,valid_solution,time_s,peak_kb,nodes_expanded,nodes_generated,max_frontier,max_depth,solution_length,restarts,seed,error
+pipes,input_pipes_4x4.json,dfs,1,solved,True,True,True,0.00022,7.5,16,17,2,16,16,0,,
+pipes,input_pipes_4x4.json,hill_climbing,1,solved,True,True,True,0.007146,27.3,7,315,0,7,7,0,1,

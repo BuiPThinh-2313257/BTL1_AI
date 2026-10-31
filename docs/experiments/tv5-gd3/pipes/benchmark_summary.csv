@@ -1,0 +1,3 @@
+﻿puzzle,input,algorithm,runs,valid_runs,invalid_runs,unsolved_runs,error_runs,statuses,success_rate,median_time_all_s,median_time_valid_s,median_peak_kb_all,median_expanded_all,median_expanded_valid
+pipes,input_pipes_4x4.json,dfs,3,3,0,0,0,solved:3,1.0,0.000145,0.000145,7.4,16,16
+pipes,input_pipes_4x4.json,hill_climbing,3,3,0,0,0,solved:3,1.0,0.018552,0.018552,66.1,21,21

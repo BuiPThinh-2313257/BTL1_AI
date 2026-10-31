@@ -1,0 +1,7 @@
+﻿puzzle,input,algorithm,run,status,found,verified,valid_solution,time_s,peak_kb,nodes_expanded,nodes_generated,max_frontier,max_depth,solution_length,restarts,seed,error
+pipes,input_pipes_4x4.json,dfs,1,solved,True,True,True,0.000193,7.5,16,17,2,16,16,0,,
+pipes,input_pipes_4x4.json,dfs,2,solved,True,True,True,0.000145,7.4,16,17,2,16,16,0,,
+pipes,input_pipes_4x4.json,dfs,3,solved,True,True,True,0.000133,7.4,16,17,2,16,16,0,,
+pipes,input_pipes_4x4.json,hill_climbing,1,solved,True,True,True,0.018785,66.1,21,945,0,21,21,0,0,
+pipes,input_pipes_4x4.json,hill_climbing,2,solved,True,True,True,0.018552,66.1,21,945,0,21,21,0,0,
+pipes,input_pipes_4x4.json,hill_climbing,3,solved,True,True,True,0.01818,66.1,21,945,0,21,21,0,0,
